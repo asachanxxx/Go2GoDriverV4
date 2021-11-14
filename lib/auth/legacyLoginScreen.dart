@@ -1,12 +1,17 @@
 import 'package:animator/animator.dart';
-import 'package:country_pickers/country.dart';
-import 'package:country_pickers/country_picker_dropdown.dart';
-import 'package:country_pickers/country_pickers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:my_cab_driver/auth/phoneAuthScreen.dart';
+import 'package:my_cab_driver/auth/documentInfo.dart';
 import 'package:my_cab_driver/auth/signUpScreen.dart';
+import 'package:my_cab_driver/auth/userstatusscreen_block.dart';
+import 'package:my_cab_driver/auth/userstatusscreen_pending.dart';
+import 'package:my_cab_driver/auth/vehicleInfo.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
+import 'package:my_cab_driver/home/homeScreen.dart';
+import 'package:my_cab_driver/models/CustomParameters.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 
 class LegacyLoginScreen extends StatefulWidget {
@@ -16,8 +21,146 @@ class LegacyLoginScreen extends StatefulWidget {
   _LegacyLoginScreenState createState() => _LegacyLoginScreenState();
 }
 
+
+
+
+
 class _LegacyLoginScreenState extends State<LegacyLoginScreen> {
   String countryCode = "+91";
+  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  var emailController = TextEditingController();
+  var passwordController = TextEditingController();
+  var isId = false;
+  late UserCredential userCredential;
+
+  void login() async {
+    //show please wait dialog
+    // showDialog(
+    //   barrierDismissible: false,
+    //   context: context,
+    //   builder: (BuildContext context) => ProgressDialog(
+    //     status: 'Logging you in',
+    //   ),
+    // );
+
+    print("isId = $isId");
+
+    if(isId) {
+      final dbRef = FirebaseDatabase.instance.reference().child(
+          "listTree/driverList");
+      var val = await dbRef.orderByChild("id").equalTo("D00100").once();
+      print("val = ${val.value}");
+      var email = "No";
+      val.value.entries.forEach((snapshot) {
+        email = snapshot.value["email"];
+      });
+      print("email = $email");
+
+      userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+          email: email, password: passwordController.text)
+          .catchError((ex) {
+        //check error and display message
+        Navigator.pop(context);
+        showAlert(context,ex.message);
+      });
+
+
+    }else {
+      userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+          email: emailController.text, password: passwordController.text)
+          .catchError((ex) {
+        //check error and display message
+       // Navigator.pop(context);
+        showAlert(context,ex.message);
+      });
+    }
+
+    User? user = userCredential.user;
+    if (user != null) {
+      // verify login
+      print("user ${userCredential.user}");
+      DatabaseReference userRef = FirebaseDatabase.instance
+          .reference()
+          .child('drivers/${user.uid}/profile');
+      userRef.once().then((DataSnapshot snapshot) {
+        if (snapshot.value != null) {
+
+          var accStatus = snapshot.value["accountStatus"];
+          print("accStatus $accStatus");
+          if (accStatus == "NoVehicleDet") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VehicleInfo(),
+              ),
+            );
+          } else if (accStatus == "NoImageDet") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DocumentInfo(),
+              ),
+            );
+          } else if (accStatus == "Banned") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UserStatusBlockScreen(),
+              ),
+            );
+          } else if (accStatus == "Pending") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UserStatusPendingScreen(),
+              ),
+            );
+          } else {
+
+            CustomParameters.currentFirebaseUser = FirebaseAuth.instance.currentUser!;
+            print("Final Status CHeck $accStatus  CustomParameters.currentFirebaseUser = ${CustomParameters.currentFirebaseUser}");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(),
+              ),
+            );
+          }
+        } else {
+          //check error and display message
+          //Navigator.pop(context);
+          showAlert(context,
+              "This account has no Associated driver account(මෙම ගිණුමට සම්බන්ද වු ධාවක ගිණුමක් නොමැත)");
+        }
+      });
+    }
+  }
+
+  showAlert(context, message) {
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: "Go2Go Messaging",
+      desc: message,
+      style: AlertStyle(
+          descStyle: TextStyle(fontSize: 15),
+          titleStyle: TextStyle(color: Color(0xFFEB1465))
+      ),
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Ok",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          color: Color(0xFF222222),
+        )
+      ],
+    ).show();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +259,7 @@ class _LegacyLoginScreenState extends State<LegacyLoginScreen> {
                                   color: Theme.of(context).backgroundColor,
                                 ),
                                 child: TextFormField(
+                                  controller: emailController,
                                   autofocus: true,
                                   style: Theme.of(context).textTheme.bodyText2!.copyWith(
                                     color: Theme.of(context).textTheme.headline6!.color,
@@ -149,6 +293,7 @@ class _LegacyLoginScreenState extends State<LegacyLoginScreen> {
                                 ),
                                 child: TextFormField(
                                   autofocus: false,
+                                  controller: passwordController,
                                   style: Theme.of(context).textTheme.bodyText2!.copyWith(
                                     color: Theme.of(context).textTheme.headline6!.color,
                                   ),
@@ -173,13 +318,8 @@ class _LegacyLoginScreenState extends State<LegacyLoginScreen> {
                               InkWell(
                                 highlightColor: Colors.transparent,
                                 splashColor: Colors.transparent,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PhoneVerification(),
-                                    ),
-                                  );
+                                onTap: () async{
+                                  login();
                                 },
                                 child: Container(
                                   height: 40,

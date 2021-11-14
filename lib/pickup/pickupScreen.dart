@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/constance/constance.dart';
+import 'package:my_cab_driver/models/TripDetails.dart';
 import 'package:my_cab_driver/ticketView.dart';
 import '../appTheme.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
 
 class PickupScreen extends StatefulWidget {
+  final TripDetails tripDetails;
+  final bool restartRide;
+  final int incomeType;
+  PickupScreen({required this.tripDetails, required this.restartRide, required this.incomeType});
   @override
   _PickupScreenState createState() => _PickupScreenState();
 }

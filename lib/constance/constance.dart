@@ -8,7 +8,7 @@ class ConstanceData {
   static final wallet = "assets/images/wallet.jpg";
   static final enableLocation = "assets/images/enableLocation.jpg";
   static final appicon = "assets/images/app_icon.png";
-  static final userImage = "assets/images/user.jpg";
+  static final userImage = "assets/images/driver.png";
   static final mylocation = "assets/images/mylocation.jpg";
   static final mylocation1 = "assets/images/mylocation1.png";
   static final mylocation2 = "assets/images/mylocation2.png";

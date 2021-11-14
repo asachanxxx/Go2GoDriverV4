@@ -133,12 +133,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           highlightColor: Colors.transparent,
           splashColor: Colors.transparent,
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PickupScreen(),
-              ),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => PickupScreen(),
+            //   ),
+            // );
           },
           child: Container(
             height: 40,

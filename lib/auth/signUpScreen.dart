@@ -6,11 +6,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:my_cab_driver/Services/financeServices.dart';
 import 'package:my_cab_driver/Services/serialService.dart';
 import 'package:my_cab_driver/auth/legacyLoginScreen.dart';
+import 'package:my_cab_driver/auth/vehicleInfo.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/auth/phoneAuthScreen.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
+import 'package:my_cab_driver/models/dailyParameters.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 import 'loginScreen.dart';
 
@@ -302,7 +306,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   highlightColor: Colors.transparent,
                                   splashColor: Colors.transparent,
                                   onTap: () async {
-                                    await registerDriver();
+                                    await registerDriver(context);
 
                                   },
                                   child: Container(
@@ -374,7 +378,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  registerDriver() async{
+  showAlert(context , message){
+    Alert(
+
+      context: context,
+      type: AlertType.error,
+      title: "Go2Go Messaging",
+      desc: message,
+      style: AlertStyle(
+          descStyle: TextStyle(fontSize: 15),
+          titleStyle: TextStyle(color: Color(0xFFEB1465))
+      ) ,
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Ok",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          color: Color(0xFF222222),
+        )
+      ],
+    ).show();
+  }
+
+  registerDriver(context) async{
     bool emailValid = RegExp(
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(emailContoller.text);
@@ -390,28 +418,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
     //   return;
     // }
     if (fullNameController.text.length < 8) {
-      print(
-          'Full name must be more than 3 characters.(සම්පූර්ණ නම අක්ෂර 8 ට වඩා වැඩි විය යුතුය.)');
+      showAlert(context,'Full name must be more than 3 characters.(සම්පූර්ණ නම අක්ෂර 8 ට වඩා වැඩි විය යුතුය.)');
       return;
     }
     if (!emailValid) {
-      print(
+      showAlert(context,
           'Invalid E-Mail address.(කරුණාකර වලංගු ඊමේල් ලිපිනයක් ඇතුලත් කරන්න )');
       return;
     }
     if (phoneContoller.text.length != 10) {
-      print(
+      showAlert(context,
           'Phone number must be 10 characters.(දුරකථන අංකය අක්ෂර 10 ක් විය යුතුය)');
       return;
     }
 
     if (passwordContoller.text.length < 6) {
-      print(
+      showAlert(context,
           'The password must be at least 6 characters.(මුරපදය අවම වශයෙන් අක්ෂර 6 ක් විය යුතුය)');
       return;
     }
     if (!isNicValid(nicContoller.text.trim())) {
-      print(
+      showAlert(context,
           'invalid National Id card number.(කරුණාකර වලංගු ජාතික හැඳුනුම්පත් අංකයක්  ඇතුලත් කරන්න)');
       return;
     }
@@ -422,7 +449,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PhoneVerification(),
+        builder: (context) => VehicleInfo(),
       ),
     );
   }
@@ -463,15 +490,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'accountStatus': "NoVehicleDet",
         'SCR': 10.0,
         'ODR': 5.0,
-        'datetime': DateTime.now().toString()
+        'datetime': DateTime.now().toString(),
+        'driverLevel': "BasicLevel",
       };
       newuser.set(usermap);
 
       DatabaseReference listUsers = FirebaseDatabase.instance
           .reference()
           .child('listTree/driverList/${userCredential.user!.uid}');
-
       listUsers.set(usermap);
+
+      ///Add Empty Account entry
+      Map dailyFinanceMap = {
+        'earning': 0.00,
+        'commission': 0.00,
+        'driveHours': 0,
+        'totalDistance': 0,
+        'totalTrips': 0,
+      };
+      FinanceService.handleDailyFinance(dailyFinanceMap);
+
       print('Hurray! Account created successfully');
       //Navigator.pushNamed(context, VehicleInfo.Id);
     } on FirebaseAuthException catch (e) {
@@ -487,65 +525,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       print('Oops! There is a problem! Try again later.');
     }
   }
-
-  // Widget _selectedCountry(Country country) => Center(
-  //       child: Padding(
-  //         padding: const EdgeInsets.only(bottom: 16),
-  //         child: Row(
-  //           children: <Widget>[
-  //             SizedBox(
-  //               child: CountryPickerUtils.getDefaultFlagImage(country),
-  //               height: 20,
-  //               width: 24,
-  //             ),
-  //             SizedBox(
-  //               width: 6,
-  //             ),
-  //             Icon(
-  //               Icons.keyboard_arrow_down,
-  //               color: Colors.black,
-  //             )
-  //           ],
-  //         ),
-  //       ),
-  //     );
-
-  // _openCountryPickerDialog() => showDialog(
-  //       context: context,
-  //       builder: (context) => CountryPickerDialog(
-  //           searchCursorColor: Theme.of(context).primaryColor,
-  //           searchInputDecoration: InputDecoration(hintText: 'Search...'),
-  //           isSearchable: true,
-  //           title: Text(
-  //             'Select your phone code',
-  //             style: Theme.of(context).textTheme.bodyText2.copyWith(
-  //                   color: Theme.of(context).textTheme.headline6.color,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //           ),
-  //           onValuePicked: (Country country) => setState(
-  //                 () => _selectedDialogCountry = country,
-  //               ),
-  //           itemBuilder: _buildDialogItem),
-  //     );
-
-  // Widget _buildDialogItem(Country country) => Row(
-  //       children: <Widget>[
-  //         CountryPickerUtils.getDefaultFlagImage(country),
-  //         SizedBox(width: 8.0),
-  //         Expanded(
-  //           child: Text(
-  //             getCountryString(country.name),
-  //           ),
-  //         ),
-  //         Container(
-  //           child: Text(
-  //             "+${country.phoneCode}",
-  //             textAlign: TextAlign.end,
-  //           ),
-  //         ),
-  //       ],
-  //     );
 
   String getCountryString(String str) {
     var newString = '';

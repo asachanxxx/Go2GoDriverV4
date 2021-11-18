@@ -248,15 +248,15 @@ class NotificationDialog extends StatelessWidget {
         CommonService.disableHomTabLocationUpdates();
 
         //changedx1
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PickupScreen(
-                tripDetails: tripDetails,
-                restartRide: false,
-                incomeType: 1,
-              ),
-            ));
+        // Navigator.push(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder: (context) => PickupScreen(
+        //         tripDetails: tripDetails,
+        //         restartRide: false,
+        //         incomeType: 1,
+        //       ),
+        //     ));
 
 
       } else if (thisRideID == 'cancelled') {

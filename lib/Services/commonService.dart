@@ -1,9 +1,18 @@
+import 'dart:convert';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
+import 'package:my_cab_driver/models/DirectionDetails.dart';
 import 'package:my_cab_driver/models/SystemSettings.dart';
+import 'package:my_cab_driver/models/TripDetails.dart';
 import 'package:my_cab_driver/models/VType.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_cab_driver/widgets/wgt_progressdialog.dart';
 
 class CommonService{
   Future<List<VType>?> getVehicleTypeInfo() async {
@@ -119,6 +128,249 @@ class CommonService{
     }
     return null;
   }
+
+
+  static Future<DirectionDetails?> getDirectionDetails( LatLng startPosition, LatLng endPosition) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.mobile &&
+        connectivityResult != ConnectivityResult.wifi) {
+      return null;
+    }
+    String urlOnly = "https://maps.googleapis.com/maps/api/directions/json?";
+    String url =
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${startPosition.latitude}, ${startPosition.longitude}&destination=${endPosition.latitude}, ${endPosition.longitude}&mode=driving&key=AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
+    print('Direction URL: ' + url);
+    var response =
+    await getRequestRevamp(url);
+    if (response == 'failed' || response == 'ZERO_RESULTS') {
+      return null;
+    }
+    DirectionDetails directionDetails = DirectionDetails(
+        distanceText: response['routes'][0]['legs'][0]['duration']['text'],
+        durationText:  response['routes'][0]['legs'][0]['distance']['text'],
+        distanceValue: response['routes'][0]['legs'][0]['distance']['value'],
+        durationValue: response['routes'][0]['legs'][0]['duration']['value'],
+        encodedPoints: response['routes'][0]['overview_polyline']['points']);
+    return directionDetails;
+  }
+
+  static Future<dynamic> getRequestRevamp(String url) async {
+    Uri uriX = Uri.parse(url);
+    print("getRequestRevamp uriX ${uriX}"); // {q: yellow, size: very big}
+    http.Response response = await http.get(uriX);
+
+    try {
+      if (response.statusCode == 200) {
+        String data = response.body;
+        var decodedata = jsonDecode(data);
+        return decodedata;
+      } else {
+        return "failed";
+      }
+    } catch (e) {
+      return "failed";
+    }
+  }
+
+  static void showProgressDialog(context) {
+    //show please wait dialog
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) => ProgressDialog(
+        status: 'Please wait',circularProgressIndicatorColor: Colors.redAccent,
+      ),
+    );
+  }
+  static String VtypeConverter(String Vtype) {
+    String GlobalVtype = "Type1";
+    if (Vtype == null || Vtype.trim() == "") {
+      GlobalVtype = "Type1";
+    } else {
+      switch (Vtype.trim().toUpperCase()) {
+        case "TUK":
+          GlobalVtype = "Type1";
+          break;
+        case "NANO":
+          GlobalVtype = "Type2";
+          break;
+        case "ALTO":
+          GlobalVtype = "Type3";
+          break;
+        case "WAGONR":
+          GlobalVtype = "Type4";
+          break;
+        case "CLASSIC":
+          GlobalVtype = "Type5";
+          break;
+        case "DELUXE":
+          GlobalVtype = "Type6";
+          break;
+        case "MINI-VAN":
+          GlobalVtype = "Type7";
+          break;
+        case "VAN":
+          GlobalVtype = "Type8";
+          break;
+      }
+    }
+
+    return GlobalVtype;
+  }
+
+  static int estimateFares(
+      DirectionDetails details, String vehicleType, TripDetails tripDetails) {
+    var PerMinute = 2.5;
+
+    print("estimateFares->vehicleType = $vehicleType");
+
+    /*
+      Bikes-25
+      Tuk-Tuk -36
+      Flex-Nano -45
+      Flex-Alto -48
+      Mini -50
+      Car -68
+      Minivan -55
+      Van-58
+      Minilorry
+      Lorry
+    * */
+    /*
+      * Fire Calculation
+      * ----------------
+      * Base Fares: This is the base or the fla amount of money witch will charged for a trip
+      *
+      * Distance Fares: This is the amount charge for Kilometer base
+      *
+      * Time Fares: this is the amount charged for every minute spend on the trip
+      *
+      * Total Fire  = Sum(Base Fares + Distance Fares +Time Fares)
+      * KM = 0.3
+      * Per Minute = 2
+      * Base Fire = $3
+      * */
+    if (details != null) {
+      double baseFire = 40;
+      double distanceFire = (details.distanceValue / 1000) * 40;
+      double timeFire = (details.durationValue / 60) * PerMinute;
+      VType tukObject = VType(
+          "", double.minPositive, double.minPositive, double.minPositive, "");
+
+      if (vehicleType == "Type1") {
+        // Tuk-Tuk
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type1");
+        baseFire = tukObject.baseFare;
+        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+      } else if (vehicleType == "Type2") {
+        // Flex-Nano
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type2");
+        baseFire = tukObject.baseFare;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
+        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        print(
+            "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
+
+      } else if (vehicleType == "Type3") {
+        // Flex-Alto
+
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type3");
+        baseFire = tukObject.baseFare;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
+        timeFire = (details.durationValue) * tukObject.minutePrice;
+        print(
+            "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
+
+      } else if (vehicleType == "Type4") {
+        // Mini
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type4");
+        baseFire = tukObject.baseFare;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
+        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        print(
+            "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
+
+      } else if (vehicleType == "Type5") {
+        // Car
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type5");
+        baseFire = tukObject.baseFare;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
+        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        print(
+            "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
+
+      } else if (vehicleType == "Type6") {
+        // Minivan
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type6");
+        baseFire = tukObject.baseFare;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
+        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+      } else if (vehicleType == "Type7") {
+        // Van
+        tukObject = CustomParameters.globalVTypes
+            .singleWhere((element) => element.name.trim() == "Type7");
+        baseFire = tukObject.baseFare;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
+        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+      }
+
+      double totalFire = baseFire + distanceFire + timeFire;
+
+      CustomParameters.paymentDetails.kmPrice = distanceFire;
+      CustomParameters.paymentDetails.timePrice = timeFire;
+      CustomParameters.paymentDetails.appPrice = baseFire;
+      CustomParameters.paymentDetails.totalFare = totalFire;
+
+      double SCR = double.minPositive;
+      double ODR = double.minPositive;
+
+      ///Company payable amount calc
+      if (CustomParameters.currentDriverInfo == null || CustomParameters.currentDriverInfo.SCR == null) {
+        SCR = ((distanceFire + timeFire) * 10) / 100;
+      } else {
+        SCR = ((distanceFire + timeFire) * CustomParameters.currentDriverInfo.SCR) / 100;
+      }
+
+      if (tripDetails.commissionApplicable) {
+        if (CustomParameters.currentDriverInfo == null || CustomParameters.currentDriverInfo.ODR == null) {
+          ODR = ((distanceFire + timeFire) * 5) / 100;
+        } else {
+          ODR = ((distanceFire + timeFire) * CustomParameters.currentDriverInfo.ODR) / 100;
+        }
+      } else {
+        ODR = 0;
+      }
+
+      CustomParameters.paymentDetails.companyPayable = SCR;
+      CustomParameters.paymentDetails.commissionApplicable = tripDetails.commissionApplicable;
+      CustomParameters.paymentDetails.commission = ODR;
+
+      print(
+          "estimateFares baseFire = $baseFire distanceFire= $distanceFire timeFire= $timeFire ");
+
+      print("Full Payment details $CustomParameters.paymentDetails");
+      return totalFire.truncate();
+    } else {
+      return 0;
+    }
+  }
+
+  static double applyFireLogic(int kms, double kmPrice) {
+    //var disKms = kms/1000;
+    if (kms <= 4) {
+      return kmPrice * 4;
+    } else {
+      return (kms) * kmPrice;
+    }
+  }
+
 
 
 

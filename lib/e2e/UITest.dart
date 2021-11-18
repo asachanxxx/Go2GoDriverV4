@@ -1,4 +1,11 @@
+import 'package:background_location/background_location.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:my_cab_driver/Services/commonService.dart';
 import 'package:my_cab_driver/auth/documentInfo.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
@@ -11,6 +18,11 @@ import 'package:my_cab_driver/home/riderList.dart';
 import 'package:my_cab_driver/home/userDetail.dart';
 import 'package:my_cab_driver/introduction/LocationScreen.dart';
 import 'package:my_cab_driver/introduction/introductionScreen.dart';
+import 'package:my_cab_driver/models/CustomParameters.dart';
+import 'package:my_cab_driver/models/Driver.dart';
+import 'package:my_cab_driver/models/PushNotificationService.dart';
+import 'package:my_cab_driver/models/TripDetails.dart';
+import 'package:my_cab_driver/models/VehicleInfomation.dart';
 import 'package:my_cab_driver/notification/notificationScree.dart';
 import 'package:my_cab_driver/pickup/pickupScreen.dart';
 import 'package:my_cab_driver/pickup/ticketScreen.dart';
@@ -721,12 +733,7 @@ class _PhoneVerificationState extends State<UiTest> {
                             highlightColor: Colors.transparent,
                             splashColor: Colors.transparent,
                             onTap: () async{
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DocumentInfo(),
-                                ),
-                              );
+                              checkAvailablity(context);
                             },
                             child: Container(
                               height: 40,
@@ -737,7 +744,7 @@ class _PhoneVerificationState extends State<UiTest> {
                               ),
                               child: Center(
                                 child: Text(
-                                  AppLocalizations.of('DocumentInfo'),
+                                  AppLocalizations.of('NewTripPage'),
                                   style: Theme.of(context).textTheme.button!.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: Theme.of(context).scaffoldBackgroundColor,
@@ -761,6 +768,87 @@ class _PhoneVerificationState extends State<UiTest> {
         ),
       ),
     );
+  }
+
+  void checkAvailablity(context) {
+    DatabaseReference rideRef =
+    FirebaseDatabase.instance.reference().child('rideRequest/-MnzFxHE5Rx0DOACowpj');
+    rideRef.once().then((DataSnapshot snapshot) {
+      // Navigator.pop(context);
+      if (snapshot.value != null) {
+        double pickupLat =
+        double.parse(snapshot.value['location']['latitude'].toString());
+        double pickupLng =
+        double.parse(snapshot.value['location']['longitude'].toString());
+        String pickupAddress = snapshot.value['pickup_address'].toString();
+        double destinationLat =
+        double.parse(snapshot.value['destination']['latitude'].toString());
+        double destinationLng =
+        double.parse(snapshot.value['destination']['longitude'].toString());
+
+        String destinationAddress = snapshot.value['destination_address'];
+        String paymentMethod = snapshot.value['payment_method'];
+        String riderName = snapshot.value['rider_name'];
+        String riderPhone = snapshot.value['rider_phone'];
+
+        TripDetails tripDetails = TripDetails(pickupAddress: pickupAddress,
+            rideID: '-MnzFxHE5Rx0DOACowpj',
+            destinationAddress: destinationAddress,
+            destination: LatLng(destinationLat, destinationLng),
+            pickup: LatLng(pickupLat, pickupLng),
+            paymentMethod: paymentMethod,
+            riderName: riderName,
+            riderPhone: riderPhone,
+            status: '',
+            bookingID: "NA"
+
+        );
+
+        if (snapshot.value['ownDriver'] != null) {
+          tripDetails.commissionedDriverId = "system";
+          tripDetails.commissionApplicable = false;
+        } else if (snapshot.value['ownDriver'] == "system") {
+          tripDetails.commissionedDriverId = "system";
+          tripDetails.commissionApplicable = false;
+        } else {
+          tripDetails.commissionedDriverId = snapshot.value['ownDriver'];
+          tripDetails.commissionApplicable = true;
+        }
+        CustomParameters.currentPosition =
+            Location(longitude: 6.877317676732788, latitude: 79.9899282496178);
+        getLocationUpdates();
+        Navigator.pop(context);
+        //CommonService.disableHomTabLocationUpdates();
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PickupScreen(
+                tripDetails: tripDetails,
+                restartRide: true,
+                incomeType: 1,
+              ),
+            ));
+      }else{
+        var ref = FirebaseDatabase.instance.reference().child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile/inMiddleOfTrip');
+        ref.set(false);
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  double earnings =0.00;
+
+  void getLocationUpdates() {
+    CustomParameters.homeTabPositionStream = Geolocator.getPositionStream(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: 2)
+        .listen((Position position) {
+      CustomParameters.currentPosition = new Location(longitude: position.longitude,latitude: position.latitude);
+      Geofire.setLocation(
+          CustomParameters.currentFirebaseUser.uid, position.latitude, position.longitude);
+      LatLng pos = LatLng(position.latitude, position.longitude);
+
+    });
   }
 
 

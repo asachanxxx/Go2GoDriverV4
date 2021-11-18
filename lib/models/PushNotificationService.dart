@@ -39,7 +39,7 @@ class PushNotificationService {
     _tokenStream = FirebaseMessaging.instance.onTokenRefresh;
     _tokenStream.listen(setToken);
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-
+      print('message ${message.messageId}');
       print('========================  Remote message Received ==================');
       RemoteNotification? notification = message.notification;
       if(message !=null) {

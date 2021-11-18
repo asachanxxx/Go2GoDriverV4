@@ -1,4 +1,5 @@
 import 'package:animator/animator.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:country_pickers/country.dart';
 import 'package:country_pickers/country_picker_dropdown.dart';
 import 'package:country_pickers/country_pickers.dart';
@@ -406,17 +407,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     bool emailValid = RegExp(
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(emailContoller.text);
-
-    //print("isNicValid(0778151151) ${isNicValid("77815115115V")}");
-
-    //Check network aialability
-    // var connectivity =
-    //     await Connectivity().checkConnectivity();
-    // if (connectivity != ConnectivityResult.mobile &&
-    //     connectivity != ConnectivityResult.wifi) {
-    //   print('It seems you are offline.(කරුණාකර ඔබගේ දුරකතනයේ අන්තර්ජාල සම්බන්දතාවය පන ගන්වන්න)');
-    //   return;
-    // }
+    var connectivity =
+        await Connectivity().checkConnectivity();
+    if (connectivity != ConnectivityResult.mobile &&
+        connectivity != ConnectivityResult.wifi) {
+      print('It seems you are offline.(කරුණාකර ඔබගේ දුරකතනයේ අන්තර්ජාල සම්බන්දතාවය පන ගන්වන්න)');
+      return;
+    }
     if (fullNameController.text.length < 8) {
       showAlert(context,'Full name must be more than 3 characters.(සම්පූර්ණ නම අක්ෂර 8 ට වඩා වැඩි විය යුතුය.)');
       return;

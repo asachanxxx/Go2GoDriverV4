@@ -42,20 +42,13 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   //     ));
   print('Handling a background message ${message.messageId}');
 }
-
-/// Create a [AndroidNotificationChannel] for heads up notifications
-late AndroidNotificationChannel channel;
-
-/// Initialize the [FlutterLocalNotificationsPlugin] package.
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   String  name = 'foo';
   FirebaseOptions  firebaseOptions = const FirebaseOptions(
     appId: '1:151650714439:android:d4df71ac0251690d63c262',
     apiKey: 'AIzaSyAZENrJd5IZp7sISusn7UTuHiwx14yRtws',
-    messagingSenderId: '297855924061',
+    messagingSenderId: '151650714439',//'297855924061',
     projectId: 'go2go-dev-5534c',
     databaseURL: 'https://go2go-dev-5534c-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
@@ -64,19 +57,17 @@ void main() async{
   /// Set the background messaging handler early on, as a named top-level function
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  channel = const AndroidNotificationChannel(
+  CustomParameters.channel = const AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications',// title
     description:  'This channel is used for important notifications.',// description
     importance: Importance.high,
   );
-
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
   /// Create an Android Notification Channel.
   /// We use this channel in the `AndroidManifest.xml` file to override the
   /// default FCM channel to enable heads up notifications.
-  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation< AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+  ///await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation< AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+  await CustomParameters.flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(CustomParameters.channel);
 
   /// Update the iOS foreground notification presentation options to allow
   /// heads up notifications.
@@ -221,7 +212,7 @@ class _MyAppState extends State<MyApp> {
       CustomParameters.currentFirebaseUser = currentFirebaseUser!;
       var hasAssociateDriverAccount =  AuthService()
           .getCheckUidHasDriverAccount(currentFirebaseUser.uid);
-      routeName = Routes.HOME;
+      routeName = Routes.UITEST;
     }
     return routeName;
   }

@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/models/Driver.dart';
+import 'package:my_cab_driver/models/PaymentDetails.dart';
 import 'package:my_cab_driver/models/SystemSettings.dart';
 import 'package:my_cab_driver/models/VType.dart';
 import 'package:my_cab_driver/models/VehicleInfomation.dart';
@@ -35,6 +36,11 @@ class CustomParameters{
   static Driver currentDriverInfo = Driver(fullName: "", email: "", phone: "", id: "", carModel: "", carColor: "", vehicleNumber: "", SCR: 6.00, ODR: 10, nic: "",driverLevel: '');
   static late VehicleInfomation currentVehicleInfomation;
   static DailyParameters dailyParameters = DailyParameters(earning: 0.00,commission: 0.00,driveHours: 0.00,totalDistance: 0.00,totalTrips: 0);
+  static late PaymentDetails paymentDetails;
+  static bool appRestaredMiddleOfRide = false;
+  static final defaultLocationLat = 6.878947;
+  static final defaultLocationLng = 79.921883;
+
   static final CameraPosition googlePlex = CameraPosition(
     target: LatLng(6.885173, 80.015352),
     zoom: 14.4746,

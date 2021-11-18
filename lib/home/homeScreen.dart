@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:animator/animator.dart';
 import 'package:background_location/background_location.dart';
 import 'package:connectivity/connectivity.dart';
@@ -8,6 +10,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/Services/commonService.dart';
 import 'package:my_cab_driver/Services/financeServices.dart';
@@ -38,14 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  var lat = 51.506115;
-  var long = -0.088339;
-
-  var lat2 = 51.509587;
-  var long2 = -0.080282;
-
-  var lat3 = 51.505944;
-  var long3 = -0.087001;
 
   late GoogleMapController mapController;
   bool cancelLocationUpdate = false;
@@ -53,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double earnings = 0.0;
   var inMiddleOfTrip = false;
   var existingRideId = "";
+  final Completer<GoogleMapController> _controller = Completer();
 
   @override
   void initState() {
@@ -137,6 +133,16 @@ class _HomeScreenState extends State<HomeScreen> {
     ///Loading daily finance
     CustomParameters.dailyParameters = (await FinanceService.getDailyFinance())!;
     print("CustomParameters.dailyParameters ${CustomParameters.dailyParameters.commission}");
+
+    try {
+      //Position position = await HelperMethods.determinePositionRaw();
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.bestForNavigation);
+      CustomParameters.currentPosition = Location(longitude: position.longitude,latitude: position.latitude);
+      print("CustomParameters.currentPosition ${ CustomParameters.currentPosition}");
+    } catch (e) {
+      print('Error: ${e.toString()}');
+    }
     return true;
   }
 
@@ -268,14 +274,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: <Widget>[
                       GoogleMap(
                         mapType: MapType.normal,
+                        myLocationButtonEnabled: true,
+                        myLocationEnabled: true,
+                        zoomGesturesEnabled: true,
+                        zoomControlsEnabled: true,
+
                         initialCameraPosition: CustomParameters.googlePlex,
                         onMapCreated: (GoogleMapController controller) {
+                          _controller.complete(controller);
                           mapController = controller;
                           setLDMapStyle();
                         },
-                        markers: Set<Marker>.of(getMarkerList(context).values),
-                        polylines: Set<Polyline>.of(
-                            getPolyLine(context).values),
+                        // markers: Set<Marker>.of(getMarkerList(context).values),
+                        // polylines: Set<Polyline>.of(
+                        //     getPolyLine(context).values),
                       ),
                       !isOffline
                           ? Column(
@@ -310,7 +322,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(
                             height: 10,
                           ),
-                          onLineModeDetail(),
+                          offLineModeDetail(),
+                          //onLineModeDetail(),
                         ],
                       ),
                     ],
@@ -326,6 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ///Handle online offline status factors /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*
   void offLineOnline(status) {
     if(status){
+      getLocationUpdates();
       goOnline();
     }else{
       goOffline();
@@ -457,6 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
+  ///Bottom part of the Screen when offline
   Widget onLineModeDetail() {
     var bootmPadding = MediaQuery.of(context).padding.bottom;
     return Padding(
@@ -476,70 +491,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: <Widget>[
-            Positioned(
-              top: 0,
-              right: 0,
-              left: 0,
-              bottom: 16,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 24, left: 24),
-                child: Animator<Offset>(
-                  tween: Tween<Offset>(
-                    begin: Offset(0, 0.5),
-                    end: Offset(0, 0),
-                  ),
-                  duration: Duration(seconds: 1),
-                  cycles: 1,
-                  builder: (context, animate, _) => SlideTransition(
-                    position: animate.animation,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          new BoxShadow(
-                            color: AppTheme.isLightTheme ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.2),
-                            blurRadius: 12,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 12,
-              right: 0,
-              left: 0,
-              bottom: 16,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12, left: 12),
-                child: Animator<Offset>(
-                  tween: Tween<Offset>(
-                    begin: Offset(0, 0.5),
-                    end: Offset(0, 0),
-                  ),
-                  duration: Duration(milliseconds: 700),
-                  cycles: 1,
-                  builder: (context, animate, _) => SlideTransition(
-                    position: animate.animation,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          new BoxShadow(
-                            color: AppTheme.isLightTheme ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.2),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+
             Animator<Offset>(
               tween: Tween<Offset>(
                 begin: Offset(0, 0.4),
@@ -800,6 +752,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  ///Bottom part of the Screen when offline
   Widget offLineModeDetail() {
     return Container(
       height: 170,
@@ -1042,80 +995,80 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Map<PolylineId, Polyline> getPolyLine(BuildContext context) {
-    Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
-    if (isOffline) {
-      List<LatLng> latlng1 = [
-        LatLng(51.506115, -0.088339),
-        LatLng(51.507129, -0.087974),
-        LatLng(51.509693, -0.087075),
-        LatLng(51.509065, -0.082206),
-        LatLng(51.509159, -0.081173),
-        LatLng(51.509346, -0.080675),
-        LatLng(51.509540, -0.080293),
-        LatLng(51.509587, -0.080282)
-      ];
-      List<LatLng> latlng2 = [LatLng(51.505951, -0.086974), LatLng(51.506051, -0.087634), LatLng(51.506115, -0.088339)];
-      final PolylineId polylineId = PolylineId('polylineId');
-      final Polyline polyline = Polyline(
-        polylineId: polylineId,
-        color: Theme.of(context).primaryColor,
-        consumeTapEvents: false,
-        points: latlng1,
-        width: 4,
-        startCap: Cap.roundCap,
-        endCap: Cap.roundCap,
-      );
-
-      final PolylineId polylineId1 = PolylineId('polylineId1');
-      List<PatternItem> patterns1 = [PatternItem.dot, PatternItem.gap(1)];
-      final Polyline polyline1 = Polyline(
-        polylineId: polylineId1,
-        color: Theme.of(context).primaryColor,
-        consumeTapEvents: false,
-        points: latlng2,
-        width: 4,
-        startCap: Cap.roundCap,
-        endCap: Cap.roundCap,
-        patterns: patterns1,
-      );
-      _polylines.addAll({polylineId: polyline});
-      _polylines.addAll({polylineId1: polyline1});
-    }
-    return _polylines;
-  }
-
-  Map<MarkerId, Marker> getMarkerList(BuildContext context) {
-    Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
-    final MarkerId markerId1 = MarkerId("markerId1");
-    final MarkerId markerId2 = MarkerId("markerId2");
-    final MarkerId markerId3 = MarkerId("markerId3");
-    final Marker marker1 = Marker(
-      markerId: markerId1,
-      position: LatLng(lat, long),
-      anchor: Offset(0.5, 0.5),
-      icon: bitmapDescriptorStartLocation,
-    );
-    if (isOffline) {
-      final Marker marker2 = Marker(
-        markerId: markerId2,
-        position: LatLng(lat2, long2),
-        anchor: Offset(0.5, 0.5),
-        icon: bitmapDescriptorStartLocation3,
-      );
-
-      final Marker marker3 = Marker(
-        markerId: markerId3,
-        position: LatLng(lat3, long3),
-        anchor: Offset(0.5, 0.5),
-        icon: bitmapDescriptorStartLocation2,
-      );
-      markers.addAll({markerId2: marker2});
-      markers.addAll({markerId3: marker3});
-    }
-    markers.addAll({markerId1: marker1});
-    return markers;
-  }
+  // Map<PolylineId, Polyline> getPolyLine(BuildContext context) {
+  //   Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
+  //   if (isOffline) {
+  //     List<LatLng> latlng1 = [
+  //       LatLng(51.506115, -0.088339),
+  //       LatLng(51.507129, -0.087974),
+  //       LatLng(51.509693, -0.087075),
+  //       LatLng(51.509065, -0.082206),
+  //       LatLng(51.509159, -0.081173),
+  //       LatLng(51.509346, -0.080675),
+  //       LatLng(51.509540, -0.080293),
+  //       LatLng(51.509587, -0.080282)
+  //     ];
+  //     List<LatLng> latlng2 = [LatLng(51.505951, -0.086974), LatLng(51.506051, -0.087634), LatLng(51.506115, -0.088339)];
+  //     final PolylineId polylineId = PolylineId('polylineId');
+  //     final Polyline polyline = Polyline(
+  //       polylineId: polylineId,
+  //       color: Theme.of(context).primaryColor,
+  //       consumeTapEvents: false,
+  //       points: latlng1,
+  //       width: 4,
+  //       startCap: Cap.roundCap,
+  //       endCap: Cap.roundCap,
+  //     );
+  //
+  //     final PolylineId polylineId1 = PolylineId('polylineId1');
+  //     List<PatternItem> patterns1 = [PatternItem.dot, PatternItem.gap(1)];
+  //     final Polyline polyline1 = Polyline(
+  //       polylineId: polylineId1,
+  //       color: Theme.of(context).primaryColor,
+  //       consumeTapEvents: false,
+  //       points: latlng2,
+  //       width: 4,
+  //       startCap: Cap.roundCap,
+  //       endCap: Cap.roundCap,
+  //       patterns: patterns1,
+  //     );
+  //     _polylines.addAll({polylineId: polyline});
+  //     _polylines.addAll({polylineId1: polyline1});
+  //   }
+  //   return _polylines;
+  // }
+  //
+  // Map<MarkerId, Marker> getMarkerList(BuildContext context) {
+  //   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  //   final MarkerId markerId1 = MarkerId("markerId1");
+  //   final MarkerId markerId2 = MarkerId("markerId2");
+  //   final MarkerId markerId3 = MarkerId("markerId3");
+  //   final Marker marker1 = Marker(
+  //     markerId: markerId1,
+  //     position: LatLng(lat, long),
+  //     anchor: Offset(0.5, 0.5),
+  //     icon: bitmapDescriptorStartLocation,
+  //   );
+  //   if (isOffline) {
+  //     final Marker marker2 = Marker(
+  //       markerId: markerId2,
+  //       position: LatLng(lat2, long2),
+  //       anchor: Offset(0.5, 0.5),
+  //       icon: bitmapDescriptorStartLocation3,
+  //     );
+  //
+  //     final Marker marker3 = Marker(
+  //       markerId: markerId3,
+  //       position: LatLng(lat3, long3),
+  //       anchor: Offset(0.5, 0.5),
+  //       icon: bitmapDescriptorStartLocation2,
+  //     );
+  //     markers.addAll({markerId2: marker2});
+  //     markers.addAll({markerId3: marker3});
+  //   }
+  //   markers.addAll({markerId1: marker1});
+  //   return markers;
+  // }
 
   Future seticonimage3(BuildContext context) async {
     // ignore: unnecessary_null_comparison
@@ -1208,4 +1161,54 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  /*
+  * When our drivers go place to place this steam subs are updating the locations
+  * Internally the Geolocator will check if Google Play Services are installed on the device.
+  * If they are not installed the Geolocator plugin will automatically switch to the LocationManager
+  * implementation. However if you want to force the Geolocator plugin to use the LocationManager
+  * implementation even when the Google Play Services are installed you could set this property to true.
+  * */
+
+  void getLocationUpdates() {
+    print("getLocationUpdates cancelLocationUpdate= $cancelLocationUpdate   isOffline= $isOffline");
+    CustomParameters.homeTabPositionStream = Geolocator.getPositionStream(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: 2)
+        .listen((Position position) {
+      print("getLocationUpdates Status  Inside= $cancelLocationUpdate   isOffline= $isOffline");
+      CustomParameters.currentPosition = new Location(longitude: position.longitude,latitude: position.latitude);
+
+      if (isOffline) {
+        //Update the location to the firebase
+        print("LocationUpdates -> ${CustomParameters.currentFirebaseUser.uid} ON ${position.latitude.toString()} and ${position.longitude.toString()}");
+        Geofire.setLocation(
+            CustomParameters.currentFirebaseUser.uid, position.latitude, position.longitude);
+      }
+      if (cancelLocationUpdate) {
+        //changedx1
+        //CustomParameters.homeTabPositionStream?.cancel();
+      } else {
+        LatLng pos = LatLng(position.latitude, position.longitude);
+        mapController.animateCamera(CameraUpdate.newLatLng(pos));
+      }
+    });
+  }
+
+  @override
+  void deactivate() {
+    mapController.dispose();
+    super.deactivate();
+  }
+
+  /*
+    Dispose is called when the State object is removed, which is permanent.
+    This method is where you should unsubscribe and cancel all animations, streams, etc.
+    */
+  @override
+  void dispose() {
+    CustomParameters.homeTabPositionStream.cancel();
+    super.dispose();
+  }
+
 }

@@ -9,8 +9,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/Services/commonService.dart';
 import 'package:my_cab_driver/Services/financeServices.dart';
@@ -25,6 +27,7 @@ import 'package:my_cab_driver/models/PushNotificationService.dart';
 import 'package:my_cab_driver/models/TripDetails.dart';
 import 'package:my_cab_driver/models/VehicleInfomation.dart';
 import 'package:my_cab_driver/widgets/wgt_collectpaymentdialog.dart';
+import 'package:my_cab_driver/widgets/wgt_progressdialog.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -47,6 +50,13 @@ class PickupScreen extends StatefulWidget {
 class _PickupScreenState extends State<PickupScreen> {
   late Future<bool> _future;
   bool isOffline = false;
+
+  Set<Marker> _markers = Set<Marker>();
+  Set<Circle> _circles = Set<Circle>();
+  Set<Polyline> _polyLines = Set<Polyline>();
+
+  List<LatLng> polylineCoordinates = [];
+  PolylinePoints polylinePoints = PolylinePoints();
 
   late BitmapDescriptor bitmapDescriptorStartLocation;
   late BitmapDescriptor bitmapDescriptorStartLocation2;
@@ -217,151 +227,109 @@ class _PickupScreenState extends State<PickupScreen> {
                   return loadingIndicators('Error: ${snapshot.error}');
                 }
                 else {
-                  return Scaffold(
-                    key: _scaffoldKey,
-                    appBar: AppBar(
-                      backgroundColor: Theme
-                          .of(context)
-                          .scaffoldBackgroundColor,
-                      automaticallyImplyLeading: false,
-                      title: Row(
+                  return SafeArea(
+                    child: Scaffold(
+                      key: _scaffoldKey,
+                      body: Stack(
                         children: <Widget>[
-                          SizedBox(
-                            height: AppBar().preferredSize.height,
-                            width: AppBar().preferredSize.height + 40,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                alignment: Alignment.centerLeft,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    _scaffoldKey.currentState!.openDrawer();
-                                  },
-                                  child: Icon(
-                                    Icons.dehaze,
-                                    color: Theme
-                                        .of(context)
-                                        .textTheme
-                                        .headline6!
-                                        .color,
-                                  ),
-                                ),
-                              ),
-                            ),
+                          GoogleMap(
+                            mapType: MapType.normal,
+                            myLocationButtonEnabled: true,
+                            myLocationEnabled: true,
+                            zoomGesturesEnabled: true,
+                            zoomControlsEnabled: true,
+                            compassEnabled: true,
+                            mapToolbarEnabled: true,
+                            trafficEnabled: true,
+                            circles: _circles,
+                            markers: _markers,
+                            polylines: _polyLines,
+
+                            initialCameraPosition: CustomParameters.googlePlex,
+                            onMapCreated: (GoogleMapController controller)  async {
+                              _controller.complete(controller);
+                              mapController = controller;
+                              setLDMapStyle();
+
+                              var currentLatLng =
+                              LatLng(CustomParameters.currentPosition.latitude!, CustomParameters.currentPosition.longitude!);
+                              var pickupLatLng = widget.tripDetails.pickup;
+                              await getDirection(currentLatLng, pickupLatLng);
+                              print("End Loading map");
+                            },
+                            // markers: Set<Marker>.of(getMarkerList(context).values),
+                            // polylines: Set<Polyline>.of(
+                            //     getPolyLine(context).values),
                           ),
-                          Expanded(
-                            child: !isOffline
-                                ? Text(
-                              AppLocalizations.of('Offline'),
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .headline6!
-                                  .copyWith(
-                                fontWeight: FontWeight.bold,
+
+                          Column(
+                            children: <Widget>[
+                              offLineMode(),
+                              Expanded(
+                                child: SizedBox(),
+                              ),
+                              myLocation(),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              offLineModeDetail(),
+                              Container(
+                                height: MediaQuery
+                                    .of(context)
+                                    .padding
+                                    .bottom,
                                 color: Theme
                                     .of(context)
-                                    .textTheme
-                                    .headline6!
-                                    .color,
-                              ),
-                              textAlign: TextAlign.center,
-                            )
-                                : Text(
-                              AppLocalizations.of('Online'),
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .headline6!
-                                  .copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .headline6!
-                                    .color,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          SizedBox(
-                            height: AppBar().preferredSize.height,
-                            width: AppBar().preferredSize.height + 40,
-                            child: Container(
-                              alignment: Alignment.centerRight,
-                              child: Switch(
-                                activeColor: Theme
-                                    .of(context)
-                                    .primaryColor,
-                                value: isOffline,
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    isOffline = !isOffline;
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
+                                    .scaffoldBackgroundColor,
+                              )
+                            ],
+                          )
+
+                          // !isOffline
+                          //     ? Column(
+                          //   children: <Widget>[
+                          //     offLineMode(),
+                          //     Expanded(
+                          //       child: SizedBox(),
+                          //     ),
+                          //     myLocation(),
+                          //     SizedBox(
+                          //       height: 10,
+                          //     ),
+                          //     offLineModeDetail(),
+                          //     Container(
+                          //       height: MediaQuery
+                          //           .of(context)
+                          //           .padding
+                          //           .bottom,
+                          //       color: Theme
+                          //           .of(context)
+                          //           .scaffoldBackgroundColor,
+                          //     )
+                          //   ],
+                          // )
+                          //     : Column(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: <Widget>[
+                          //     Expanded(
+                          //       child: SizedBox(),
+                          //     ),
+                          //     myLocation(),
+                          //     SizedBox(
+                          //       height: 10,
+                          //     ),
+                          //     offLineModeDetail(),
+                          //     //onLineModeDetail(),
+                          //   ],
+                          // ),
+
+
+
+
+
+
                         ],
                       ),
-                    ),
-                    body: Stack(
-                      children: <Widget>[
-                        GoogleMap(
-                          mapType: MapType.normal,
-                          myLocationButtonEnabled: true,
-                          myLocationEnabled: true,
-                          zoomGesturesEnabled: true,
-                          zoomControlsEnabled: true,
-
-                          initialCameraPosition: CustomParameters.googlePlex,
-                          onMapCreated: (GoogleMapController controller) {
-                            _controller.complete(controller);
-                            mapController = controller;
-                            setLDMapStyle();
-                          },
-                          // markers: Set<Marker>.of(getMarkerList(context).values),
-                          // polylines: Set<Polyline>.of(
-                          //     getPolyLine(context).values),
-                        ),
-                        !isOffline
-                            ? Column(
-                          children: <Widget>[
-                            offLineMode(),
-                            Expanded(
-                              child: SizedBox(),
-                            ),
-                            myLocation(),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            offLineModeDetail(),
-                            Container(
-                              height: MediaQuery
-                                  .of(context)
-                                  .padding
-                                  .bottom,
-                              color: Theme
-                                  .of(context)
-                                  .scaffoldBackgroundColor,
-                            )
-                          ],
-                        )
-                            : Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              child: SizedBox(),
-                            ),
-                            myLocation(),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            offLineModeDetail(),
-                            //onLineModeDetail(),
-                          ],
-                        ),
-                      ],
                     ),
                   );
                 }
@@ -370,6 +338,511 @@ class _PickupScreenState extends State<PickupScreen> {
         )
     );
   }
+
+
+  Widget offLineMode() {
+    return Animator<double>(
+      duration: Duration(milliseconds: 400),
+      cycles: 1,
+      builder: (_, animatorState, __) => SizeTransition(
+        sizeFactor: animatorState.animation,
+        axis: Axis.horizontal,
+        child: Container(
+          height: AppBar().preferredSize.height,
+          color: Theme.of(context).primaryColor,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 14, left: 14),
+            child: Row(
+              children: <Widget>[
+                DottedBorder(
+                  color: ConstanceData.secoundryFontColor,
+                  borderType: BorderType.Circle,
+                  strokeWidth: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child:
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundImage: AssetImage(
+                        ConstanceData.userImage,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 16,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      AppLocalizations.of(widget.tripDetails.riderName),
+                      style: Theme.of(context).textTheme.headline6!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: ConstanceData.secoundryFontColor,
+                      ),
+                    ),
+                    Text(
+                      AppLocalizations.of('${widget.tripDetails.riderPhone} - GOLD Customer'),
+                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                        color: ConstanceData.secoundryFontColor,
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget myLocation() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          Container(
+            decoration: new BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).primaryColor,
+                  blurRadius: 12,
+                  spreadRadius: -5,
+                  offset: new Offset(0.0, 0),
+                )
+              ],
+            ),
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              child: Icon(
+                Icons.my_location,
+                color: Theme.of(context).textTheme.headline6!.color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  ///Bottom part of the Screen when offline
+  Widget offLineModeDetail() {
+    return Container(
+      height: 320,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(15),
+          topRight: Radius.circular(15),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 14, left: 14),
+        child: Column(
+          children: <Widget>[
+            SizedBox(
+              height: 8,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  height: 4,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dividerColor,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 8,
+            ),
+
+
+            Row(
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        Icon(
+                          Icons.circle,
+                          color: Color(0xfff57f17),
+                        ),
+                        SizedBox(
+                          height: 7,
+                        ),
+                        Icon(
+                          Icons.circle,
+                          color: Color(0xff0277bd),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      width: 15,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          '${widget.tripDetails.pickupAddress}',
+                          style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
+                              color: Color(0xFF00001f)),
+                        ),
+                        new SizedBox(
+                          height: 10.0,
+                        ),
+                        Text(
+                          '${widget.tripDetails.destinationAddress}',
+                          style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
+                              color: Color(0xFF00001f)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+              ],
+            ),
+            SizedBox(
+              height: 8,
+            ),
+            Container(
+              height: 75,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Theme.of(context).primaryColor,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 14 , top: 5 , right: 14 , bottom: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        Text(
+                          '$totalDistance',
+                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                            color: ConstanceData.secoundryFontColor,
+                          ),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              //earning
+                              AppLocalizations.of('KM'),
+                              style: Theme.of(context).textTheme.caption!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Theme.of(context).scaffoldBackgroundColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: <Widget>[
+                        Text(
+                          '$totalSpeed',
+                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                            color: ConstanceData.secoundryFontColor,
+                          ),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              AppLocalizations.of('KM/H'),
+                              style: Theme.of(context).textTheme.caption!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Theme.of(context).scaffoldBackgroundColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: <Widget>[
+                        Text(
+                          '$durationCounter',
+                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                            color: ConstanceData.secoundryFontColor,
+                          ),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              AppLocalizations.of('MINUTES'),
+                              style: Theme.of(context).textTheme.caption!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Theme.of(context).scaffoldBackgroundColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SizedBox(
+              height: 8,
+            ),
+            Container(
+              height: 70,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Theme.of(context).backgroundColor,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 2 , top: 7 , right: 2 , bottom: 5),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          launch("tel://${widget.tripDetails.riderPhone}");
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                BorderRadius.all(Radius.circular((25))),
+                                border: Border.all(
+                                    width: 2.0, color: Colors.redAccent),
+                              ),
+                              child: Icon(Icons.call,
+                                  color: Colors.redAccent),
+                            ),
+                            Text(
+                              "Call",
+                              style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if(status == 'init'){
+                            var driverLocation = LatLng(CustomParameters.currentPosition.latitude!,
+                                CustomParameters.currentPosition.longitude!);
+                            _launchMapsUrl(
+                                driverLocation, widget.tripDetails.pickup);
+                          }
+                          if(status == 'arrived' || status == 'ontrip'){
+                            _launchMapsUrl(widget.tripDetails.pickup,
+                                widget.tripDetails.destination);
+                          }
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                BorderRadius.all(Radius.circular((25))),
+                                border: Border.all(
+                                    width: 2.0, color: Theme.of(context).primaryColor),
+                              ),
+                              child: Icon(Icons.navigation_outlined,
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                            Text(
+                              "Navigation",
+                              style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          launch("tel://${widget.tripDetails.riderPhone}");
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                BorderRadius.all(Radius.circular((25))),
+                                border: Border.all(
+                                    width: 2.0, color: Theme.of(context).primaryColor),
+                              ),
+                              child: Icon(Icons.play_arrow,
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                            Text(
+                              "Voice Trip",
+                              style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          launch("tel://${widget.tripDetails.riderPhone}");
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: 40,
+                              width: 40,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                BorderRadius.all(Radius.circular((25))),
+                                border: Border.all(
+                                    width: 2.0, color: Theme.of(context).primaryColor),
+                              ),
+                              child: Icon(Icons.report_gmailerrorred_outlined,
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                            Text(
+                              "Report",
+                              style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.normal),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            InkWell(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              onTap: () async {
+                doRide();
+              },
+              child: Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).textTheme.headline6!.color,
+                ),
+                child: Center(
+                  child: Text(
+                    AppLocalizations.of(buttonTitle),
+                    style: Theme.of(context).textTheme.button!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 5,
+            ),
+
+
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  void setLDMapStyle() async {
+    // ignore: unnecessary_null_comparison
+    if (mapController != null) {
+      if (AppTheme.isLightTheme) {
+        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/lightmapstyle.json"));
+      } else {
+        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/darkmapstyle.json"));
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+  @override
+  void deactivate() {
+    //mapController.dispose();
+    super.deactivate();
+  }
+
+  /*
+    Dispose is called when the State object is removed, which is permanent.
+    This method is where you should unsubscribe and cancel all animations, streams, etc.
+    */
+  @override
+  void dispose() {
+    CustomParameters.homeTabPositionStream!.cancel();
+    super.dispose();
+  }
+
+  /// OLD SRC Methods ************************************************************************************************************************************************************************************
+  /// ************************************************************************************************************************************************************************************
+  /// ************************************************************************************************************************************************************************************
 
   ///Show alerts /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
   showAlert(context, message) {
@@ -438,530 +911,6 @@ class _PickupScreenState extends State<PickupScreen> {
         ));
   }
 
-  ///Bottom part of the Screen when offline
-  Widget onLineModeDetail() {
-    var bootmPadding = MediaQuery.of(context).padding.bottom;
-    return Padding(
-      padding: EdgeInsets.only(right: 10, left: 10, bottom: bootmPadding),
-      child: InkWell(
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        onTap: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => RiderList(),
-          //     fullscreenDialog: true,
-          //   ),
-          // );
-        },
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: <Widget>[
-
-            Animator<Offset>(
-              tween: Tween<Offset>(
-                begin: Offset(0, 0.4),
-                end: Offset(0, 0),
-              ),
-              duration: Duration(milliseconds: 700),
-              cycles: 1,
-              builder: (context, animate, _) => SlideTransition(
-                position: animate.animation,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 24),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        new BoxShadow(
-                          color: Theme.of(context).dividerColor,
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Column(
-                        children: <Widget>[
-                          Container(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.asset(
-                                    ConstanceData.userImage,
-                                    height: 40,
-                                    width: 40,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 8,
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      AppLocalizations.of('Esther Berry'),
-                                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.headline6!.color,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        Container(
-                                          height: 24,
-                                          width: 74,
-                                          child: Center(
-                                            child: Text(
-                                              AppLocalizations.of('ApplePay'),
-                                              style: Theme.of(context).textTheme.button!.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: ConstanceData.secoundryFontColor,
-                                              ),
-                                            ),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(15),
-                                            ),
-                                            color: Theme.of(context).primaryColor,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 4,
-                                        ),
-                                        Container(
-                                          height: 24,
-                                          width: 74,
-                                          child: Center(
-                                            child: Text(
-                                              AppLocalizations.of('Discount'),
-                                              style: Theme.of(context).textTheme.button!.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                color: ConstanceData.secoundryFontColor,
-                                              ),
-                                            ),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(15),
-                                            ),
-                                            color: Theme.of(context).primaryColor,
-                                          ),
-                                        )
-                                      ],
-                                    )
-                                  ],
-                                ),
-                                Expanded(
-                                  child: SizedBox(),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: <Widget>[
-                                    Text(
-                                      '\$25.00',
-                                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.headline6!.color,
-                                      ),
-                                    ),
-                                    Text(
-                                      '2.2 km',
-                                      style: Theme.of(context).textTheme.caption!.copyWith(
-                                        color: Theme.of(context).disabledColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(
-                            height: 0.5,
-                            color: Theme.of(context).disabledColor,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 14, left: 14, top: 10, bottom: 10),
-                            child: Row(
-                              children: <Widget>[
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      AppLocalizations.of('PICKUP'),
-                                      style: Theme.of(context).textTheme.caption!.copyWith(
-                                        color: Theme.of(context).disabledColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      AppLocalizations.of('79 Swift Village'),
-                                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.headline6!.color,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(
-                            height: 0.5,
-                            color: Theme.of(context).disabledColor,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 14, left: 14, top: 10, bottom: 10),
-                            child: Row(
-                              children: <Widget>[
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(
-                                      AppLocalizations.of('DROP OFF'),
-                                      style: Theme.of(context).textTheme.caption!.copyWith(
-                                        color: Theme.of(context).disabledColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      AppLocalizations.of('115 William St, Chicago, US'),
-                                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.headline6!.color,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(
-                            height: 0.5,
-                            color: Theme.of(context).disabledColor,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 14, left: 14, top: 10, bottom: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: <Widget>[
-                                Container(
-                                  height: 32,
-                                  width: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: Theme.of(context).scaffoldBackgroundColor,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      AppLocalizations.of('Ignore'),
-                                      style: Theme.of(context).textTheme.button!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).disabledColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Container(
-                                  height: 32,
-                                  width: 80,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      AppLocalizations.of('ACCEPT'),
-                                      style: Theme.of(context).textTheme.button!.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: ConstanceData.secoundryFontColor,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void setLDMapStyle() async {
-    // ignore: unnecessary_null_comparison
-    if (mapController != null) {
-      if (AppTheme.isLightTheme) {
-        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/lightmapstyle.json"));
-      } else {
-        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/darkmapstyle.json"));
-      }
-    }
-  }
-
-  ///Bottom part of the Screen when offline
-  Widget offLineModeDetail() {
-    return Container(
-      height: 170,
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(right: 14, left: 14),
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              height: 8,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  height: 4,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 8,
-            ),
-            Row(
-              children: <Widget>[
-                CircleAvatar(
-                  radius: 16,
-                  backgroundImage: AssetImage(
-                    ConstanceData.userImage,
-                  ),
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      AppLocalizations.of(CustomParameters.currentDriverInfo.fullName),
-                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.headline6!.color,
-                      ),
-                    ),
-                    Text(
-                      AppLocalizations.of(CustomParameters.currentDriverInfo.driverLevel),
-                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: SizedBox(),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Text(
-                      '${CustomParameters.dailyParameters.commission>1 ? CustomParameters.dailyParameters.commission : 0.00 } LKR',
-                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.headline6!.color,
-                      ),
-                    ),
-                    Text(
-                      AppLocalizations.of('Commission'),
-                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 8,
-            ),
-            Container(
-              height: 90,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Theme.of(context).primaryColor,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Column(
-                      children: <Widget>[
-                        Icon(
-                          FontAwesomeIcons.moneyBill,
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          size: 20,
-                        ),
-                        Expanded(
-                          child: SizedBox(),
-                        ),
-                        SizedBox(
-                          height: 4,
-                        ),
-                        Text(
-                          '${CustomParameters.dailyParameters.earning>1 ? CustomParameters.dailyParameters.earning : 0.00 } LKR',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: ConstanceData.secoundryFontColor,
-                          ),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              //earning
-                              AppLocalizations.of('EARNINGS'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: <Widget>[
-                        Icon(
-                          FontAwesomeIcons.tachometerAlt,
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          size: 20,
-                        ),
-                        Expanded(
-                          child: SizedBox(),
-                        ),
-                        SizedBox(
-                          height: 4,
-                        ),
-                        Text(
-                          '${CustomParameters.dailyParameters.totalDistance>1 ? CustomParameters.dailyParameters.totalDistance : 0.00 } KM',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: ConstanceData.secoundryFontColor,
-                          ),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              AppLocalizations.of('TOTAL DISTANCE'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: <Widget>[
-                        Icon(
-                          FontAwesomeIcons.rocket,
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          size: 20,
-                        ),
-                        Expanded(
-                          child: SizedBox(),
-                        ),
-                        SizedBox(
-                          height: 4,
-                        ),
-                        Text(
-                          '${CustomParameters.dailyParameters.totalTrips}',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: ConstanceData.secoundryFontColor,
-                          ),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Text(
-                              AppLocalizations.of('TOTAL TRIPS'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget myLocation() {
-    return Padding(
-      padding: const EdgeInsets.only(right: 14),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: <Widget>[
-          Container(
-            decoration: new BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).primaryColor,
-                  blurRadius: 12,
-                  spreadRadius: -5,
-                  offset: new Offset(0.0, 0),
-                )
-              ],
-            ),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              child: Icon(
-                Icons.my_location,
-                color: Theme.of(context).textTheme.headline6!.color,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future seticonimage3(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation3 == null) {
@@ -998,82 +947,6 @@ class _PickupScreenState extends State<PickupScreen> {
     // }
   }
 
-  Widget offLineMode() {
-    return Animator<double>(
-      duration: Duration(milliseconds: 400),
-      cycles: 1,
-      builder: (_, animatorState, __) => SizeTransition(
-        sizeFactor: animatorState.animation,
-        axis: Axis.horizontal,
-        child: Container(
-          height: AppBar().preferredSize.height,
-          color: Theme.of(context).primaryColor,
-          child: Padding(
-            padding: const EdgeInsets.only(right: 14, left: 14),
-            child: Row(
-              children: <Widget>[
-                DottedBorder(
-                  color: ConstanceData.secoundryFontColor,
-                  borderType: BorderType.Circle,
-                  strokeWidth: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      FontAwesomeIcons.cloudMoon,
-                      color: ConstanceData.secoundryFontColor,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 16,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      AppLocalizations.of('You are offline !'),
-                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: ConstanceData.secoundryFontColor,
-                      ),
-                    ),
-                    Text(
-                      AppLocalizations.of('Go online to strat accepting jobs.'),
-                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                        color: ConstanceData.secoundryFontColor,
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  @override
-  void deactivate() {
-    mapController.dispose();
-    super.deactivate();
-  }
-
-  /*
-    Dispose is called when the State object is removed, which is permanent.
-    This method is where you should unsubscribe and cancel all animations, streams, etc.
-    */
-  @override
-  void dispose() {
-    CustomParameters.homeTabPositionStream.cancel();
-    super.dispose();
-  }
-
-  /// OLD SRC Methods ************************************************************************************************************************************************************************************
-  /// ************************************************************************************************************************************************************************************
-  /// ************************************************************************************************************************************************************************************
   Future<void> startLocationUpdate() async{
     // FirebaseService.logtoGPSData('=================================================================================================');
     // FirebaseService.logtoGPSData('=================================== GPS based Distance tracking is on ===========================');
@@ -1099,7 +972,7 @@ class _PickupScreenState extends State<PickupScreen> {
       //return;
       print("New trip Point 6");
     }
-
+    print("New trip Point 7");
     BackgroundLocation.stopLocationService();
     BackgroundLocation.setAndroidConfiguration(2000);
     await BackgroundLocation.setAndroidNotification(
@@ -1107,7 +980,7 @@ class _PickupScreenState extends State<PickupScreen> {
       message: "Go2Go Background location in progress",
       icon: "@mipmap/ic_launcher",
     );
-
+    print("New trip Point 8");
     await BackgroundLocation.startLocationService(distanceFilter: 20);
 
     BackgroundLocation.getLocationUpdates((location) {
@@ -1130,7 +1003,7 @@ class _PickupScreenState extends State<PickupScreen> {
         print('Error in updates ${e}');
       }
     });
-    print("New trip Point 7");
+    print("New trip Point 9");
   }
 
   double calculateDistance(lat1, lon1, lat2, lon2){
@@ -1154,6 +1027,7 @@ class _PickupScreenState extends State<PickupScreen> {
     double d = R * c;
     return d;
   }
+
   double toRadian(double val) {
     return (pi / 180) * val;
   }
@@ -1677,6 +1551,215 @@ class _PickupScreenState extends State<PickupScreen> {
     });
   }
 
+///Migrated method ******************************************************************************************************************************************************
+///**********************************************************************************************************************************************************************
+///**********************************************************************************************************************************************************************
+
+  Future<void> getDirection(LatLng pickupLatLng, LatLng destinationLatLng) async {
+    BuildContext dialogContext = context;
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          dialogContext = context;
+          return ProgressDialog(
+            status: 'Please wait...2', circularProgressIndicatorColor: Colors.redAccent,
+          );
+        });
+
+    var thisDetails = await CommonService.getDirectionDetails(
+        pickupLatLng, destinationLatLng);
+
+    if(widget.incomeType ==1){
+      print('Calling Navigator.pop cus incomeType ==1');
+      //Navigator.pop(context);
+    }
+    Navigator.pop(dialogContext);
+    print('getDirection - Create Polyline');
+    PolylinePoints polylinePoints = PolylinePoints();
+    List<PointLatLng> results =
+    polylinePoints.decodePolyline(thisDetails!.encodedPoints);
+
+    polylineCoordinates.clear();
+    if (results.isNotEmpty) {
+      // loop through all PointLatLng points and convert them
+      // to a list of LatLng, required by the Polyline
+      results.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+    }
+
+    _polyLines.clear();
+    print('getDirection - Set state');
+    setState(() {
+      Polyline polyline = Polyline(
+        polylineId: PolylineId('polyid'),
+        color: Color.fromARGB(255, 95, 109, 237),
+        points: polylineCoordinates,
+        jointType: JointType.round,
+        width: 4,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+        geodesic: true,
+      );
+
+      _polyLines.add(polyline);
+    });
+
+    // make polyline to fit into the map
+    LatLngBounds bounds;
+
+    if (pickupLatLng.latitude > destinationLatLng.latitude &&
+        pickupLatLng.longitude > destinationLatLng.longitude) {
+      bounds =
+          LatLngBounds(southwest: destinationLatLng, northeast: pickupLatLng);
+    } else if (pickupLatLng.longitude > destinationLatLng.longitude) {
+      bounds = LatLngBounds(
+          southwest: LatLng(pickupLatLng.latitude, destinationLatLng.longitude),
+          northeast:
+          LatLng(destinationLatLng.latitude, pickupLatLng.longitude));
+    } else if (pickupLatLng.latitude > destinationLatLng.latitude) {
+      bounds = LatLngBounds(
+        southwest: LatLng(destinationLatLng.latitude, pickupLatLng.longitude),
+        northeast: LatLng(pickupLatLng.latitude, destinationLatLng.longitude),
+      );
+    } else {
+      bounds =
+          LatLngBounds(southwest: pickupLatLng, northeast: destinationLatLng);
+    }
+
+    print('getDirection - creating markers');
+
+    Marker pickupMarker = Marker(
+      markerId: MarkerId('pickup'),
+      position: pickupLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+    );
+
+    Marker destinationMarker = Marker(
+      markerId: MarkerId('destination'),
+      position: destinationLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    );
+
+    setState(() {
+      _markers.add(pickupMarker);
+      _markers.add(destinationMarker);
+    });
+    print('getDirection - creating Circles');
+    Circle pickupCircle = Circle(
+      circleId: CircleId('pickup'),
+      strokeColor: Colors.green,
+      strokeWidth: 3,
+      radius: 12,
+      center: pickupLatLng,
+      fillColor: Theme.of(context).primaryColor,
+    );
+
+    Circle destinationCircle = Circle(
+      circleId: CircleId('destination'),
+      strokeColor: Theme.of(context).primaryColor,
+      strokeWidth: 3,
+      radius: 12,
+      center: destinationLatLng,
+      fillColor: Theme.of(context).primaryColor,
+    );
+
+    setState(() {
+      _circles.add(pickupCircle);
+      _circles.add(destinationCircle);
+    });
+    print('getDirection - End');
+  }
+
+  doRide() async {
+    await CustomParameters.homeTabPositionStream!.cancel();
+
+    CustomParameters.rideRef = FirebaseDatabase.instance
+        .reference()
+        .child("rideRequest/${widget.tripDetails.rideID}");
+    print(
+        "onPress status $status");
+
+    if (status == 'init') {
+      status = 'accepted';
+      CustomParameters.rideRef.child('status').set(('accepted'));
+
+      setState(() {
+        buttonTitle = 'ARRIVED';
+        buttonColor = Color(0xFFf4511e);
+      });
+      print(
+          "LatLng pos.longitude ${CustomParameters.currentPosition.longitude}");
+      print(
+          "LatLng pos.latitude ${CustomParameters.currentPosition.latitude}");
+
+    }
+
+    else if (status == 'accepted') {
+      status = 'arrived';
+      CustomParameters.rideRef.child('status').set(('arrived'));
+
+      setState(() {
+        buttonTitle = 'START TRIP';
+        buttonColor = Color(0xFF263238);
+      });
+
+      BuildContext dialogContext = context;
+      showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (BuildContext context) {
+            dialogContext = context;
+            return ProgressDialog(
+              status: 'Please wait...2', circularProgressIndicatorColor: Colors.redAccent,
+            );
+          });
+
+      await getDirection(widget.tripDetails.pickup,
+          widget.tripDetails.destination);
+      print('Calling Navigator.pop on Point 1');
+
+      if(widget.tripDetails.bookingID != "NA"){
+        DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+            .child('rideBookings/${widget.tripDetails.bookingID}/');
+        instanceBase.child("status").set("Arrived");
+      }
+      Navigator.pop(dialogContext);
+
+    }
+
+    else if (status == 'arrived') {
+      resetTelemetryValues();
+      // _launchMapsUrl(widget.tripDetails.pickup,
+      //     widget.tripDetails.destination);
+
+      status = 'ontrip';
+      //Update the firebase status
+      CustomParameters.rideRef.child('status').set('ontrip');
+      TimeSpent = "0.00";
+
+      setState(() {
+        cumDistance = 0.0;
+        //distancex = "0.00";
+        cumDistanceGro = 0.0;
+        buttonTitle = 'END TRIP';
+        buttonColor = Color(0xFF263238);
+      });
+
+      if(widget.tripDetails.bookingID != "NA"){
+        DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+            .child('rideBookings/${widget.tripDetails.bookingID}/');
+        instanceBase.child("status").set("OnTrip");
+      }
+      //To count how many minutes spend on a trip
+      startTimer();
+    }
+    else if (status == 'ontrip') {
+      endTrip();
+    }
+
+  }
 
 
 

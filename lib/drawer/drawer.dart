@@ -279,22 +279,22 @@ class _AppDrawerState extends State<AppDrawer> {
                 splashColor: Colors.transparent,
                 onTap: () {
                   Navigator.pop(context);
-                  if (widget.selectItemName != 'Wallet') {
-                    Navigator.pushNamedAndRemoveUntil(context, Routes.WALLET,
-                        (Route<dynamic> route) => false);
+                  if (widget.selectItemName != 'vtr') {
+                    Navigator.pushNamedAndRemoveUntil(context, Routes.VOICETRIP,
+                            (Route<dynamic> route) => false);
                   }
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4),
                   child: Row(
                     children: <Widget>[
-                      widget.selectItemName == 'Wallet'
+                      widget.selectItemName == 'vtr'
                           ? selectedData()
                           : SizedBox(),
                       Icon(
-                        FontAwesomeIcons.wallet,
+                        FontAwesomeIcons.play,
                         size: 20,
-                        color: widget.selectItemName == 'Wallet'
+                        color: widget.selectItemName == 'vtr'
                             ? Theme.of(context).primaryColor
                             : Theme.of(context).dividerColor,
                       ),
@@ -302,12 +302,12 @@ class _AppDrawerState extends State<AppDrawer> {
                         width: 10,
                       ),
                       Text(
-                        AppLocalizations.of('Wallet'),
+                        AppLocalizations.of('Voice Trip Requests'),
                         style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  Theme.of(context).textTheme.headline6!.color,
-                            ),
+                          fontWeight: FontWeight.bold,
+                          color:
+                          Theme.of(context).textTheme.headline6!.color,
+                        ),
                       ),
                     ],
                   ),
@@ -316,48 +316,7 @@ class _AppDrawerState extends State<AppDrawer> {
               SizedBox(
                 height: 32,
               ),
-              InkWell(
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                onTap: () {
-                  Navigator.pop(context);
-                  if (widget.selectItemName != 'History') {
-                    Navigator.pushNamedAndRemoveUntil(context, Routes.HISTORY,
-                        (Route<dynamic> route) => false);
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Row(
-                    children: <Widget>[
-                      widget.selectItemName == 'History'
-                          ? selectedData()
-                          : SizedBox(),
-                      Icon(
-                        FontAwesomeIcons.history,
-                        size: 20,
-                        color: widget.selectItemName == 'History'
-                            ? Theme.of(context).primaryColor
-                            : Theme.of(context).dividerColor,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        AppLocalizations.of('History'),
-                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color:
-                                  Theme.of(context).textTheme.headline6!.color,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 32,
-              ),
+              //booking
               InkWell(
                 highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
@@ -387,6 +346,132 @@ class _AppDrawerState extends State<AppDrawer> {
                       ),
                       Text(
                         AppLocalizations.of('Notifications'),
+                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color:
+                          Theme.of(context).textTheme.headline6!.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 32,
+              ),
+              InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                onTap: () {
+                  Navigator.pop(context);
+                  if (widget.selectItemName != 'booking') {
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        Routes.NOTIFICATION, (Route<dynamic> route) => false);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Row(
+                    children: <Widget>[
+                      widget.selectItemName == 'booking'
+                          ? selectedData()
+                          : SizedBox(),
+                      Icon(
+                        FontAwesomeIcons.solidBell,
+                        size: 20,
+                        color: widget.selectItemName == 'booking'
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).dividerColor,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        AppLocalizations.of('Trip Bookings'),
+                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color:
+                          Theme.of(context).textTheme.headline6!.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 32,
+              ),
+              InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                onTap: () {
+                  Navigator.pop(context);
+                  if (widget.selectItemName != 'History') {
+                    Navigator.pushNamedAndRemoveUntil(context, Routes.HISTORY,
+                            (Route<dynamic> route) => false);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Row(
+                    children: <Widget>[
+                      widget.selectItemName == 'History'
+                          ? selectedData()
+                          : SizedBox(),
+                      Icon(
+                        FontAwesomeIcons.history,
+                        size: 20,
+                        color: widget.selectItemName == 'History'
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).dividerColor,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        AppLocalizations.of('History'),
+                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color:
+                          Theme.of(context).textTheme.headline6!.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 32,
+              ),
+              InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                onTap: () {
+                  Navigator.pop(context);
+                  if (widget.selectItemName != 'Wallet') {
+                    Navigator.pushNamedAndRemoveUntil(context, Routes.WALLET,
+                        (Route<dynamic> route) => false);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Row(
+                    children: <Widget>[
+                      widget.selectItemName == 'Wallet'
+                          ? selectedData()
+                          : SizedBox(),
+                      Icon(
+                        FontAwesomeIcons.wallet,
+                        size: 20,
+                        color: widget.selectItemName == 'Wallet'
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).dividerColor,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        AppLocalizations.of('Wallet'),
                         style: Theme.of(context).textTheme.bodyText2!.copyWith(
                               fontWeight: FontWeight.bold,
                               color:

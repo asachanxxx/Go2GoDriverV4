@@ -340,6 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void offLineOnline(status) {
     if(status){
       getLocationUpdates();
+      CustomParameters.isOnline = true;
       goOnline();
     }else{
       goOffline();
@@ -1207,7 +1208,9 @@ class _HomeScreenState extends State<HomeScreen> {
     */
   @override
   void dispose() {
-    CustomParameters.homeTabPositionStream.cancel();
+    if(CustomParameters.homeTabPositionStream != null){
+      CustomParameters.homeTabPositionStream!.cancel();
+    }
     super.dispose();
   }
 

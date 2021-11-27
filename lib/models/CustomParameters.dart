@@ -25,7 +25,7 @@ class CustomParameters{
   static bool isOnline = false;
   static LatLng posError = LatLng(6.877133555388284, 79.98983549839619);
   static List<VType> globalVTypes = [];
-  static late StreamSubscription<Position> homeTabPositionStream;
+  static StreamSubscription<Position>? homeTabPositionStream;
   static late SystemSettings systemSettings;
   static late DatabaseReference rideRef;
   static String ApiKey = "AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";

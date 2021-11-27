@@ -45,12 +45,12 @@ class CommonService{
 
 
   static void disableHomTabLocationUpdates() {
-    CustomParameters.homeTabPositionStream.pause();
+    CustomParameters.homeTabPositionStream!.pause();
     Geofire.removeLocation(CustomParameters.currentFirebaseUser.uid);
   }
 
   static void enableHomTabLocationUpdates() {
-    CustomParameters.homeTabPositionStream.resume();
+    CustomParameters.homeTabPositionStream!.resume();
     Geofire.setLocation(CustomParameters.currentFirebaseUser.uid, CustomParameters.currentPosition.latitude!,
         CustomParameters.currentPosition.longitude!);
   }
@@ -140,8 +140,8 @@ class CommonService{
     String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${startPosition.latitude}, ${startPosition.longitude}&destination=${endPosition.latitude}, ${endPosition.longitude}&mode=driving&key=AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
     print('Direction URL: ' + url);
-    var response =
-    await getRequestRevamp(url);
+    var response =  await getRequestRevamp(url);
+    print('Response getDirectionDetails: $response');
     if (response == 'failed' || response == 'ZERO_RESULTS') {
       return null;
     }

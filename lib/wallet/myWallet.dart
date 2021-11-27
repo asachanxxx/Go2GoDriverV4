@@ -18,7 +18,9 @@ class _MyWalletState extends State<MyWallet> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Theme.of(context).backgroundColor,
-      appBar: AppBar(
+      appBar:
+
+      AppBar(
         elevation: 0,
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
@@ -60,6 +62,7 @@ class _MyWalletState extends State<MyWallet> {
           ],
         ),
       ),
+
       drawer: SizedBox(
         width: MediaQuery.of(context).size.width * 0.75 < 400 ? MediaQuery.of(context).size.width * 0.75 : 350,
         child: Drawer(
@@ -68,6 +71,8 @@ class _MyWalletState extends State<MyWallet> {
           ),
         ),
       ),
+
+
       body: Stack(
         alignment: AlignmentDirectional.topCenter,
         children: <Widget>[

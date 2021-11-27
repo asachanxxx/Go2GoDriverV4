@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
 import 'package:my_cab_driver/Services/commonService.dart';
+import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/models/TripDetails.dart';
 import 'package:my_cab_driver/pickup/pickupScreen.dart';
@@ -23,28 +24,42 @@ class NotificationDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
       ),
       elevation: 0.0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).dividerColor,
       child: Container(
+
         margin: EdgeInsets.all(4),
         width: double.infinity,
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(4)),
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.black26,
+            border: Border.all(color:Theme.of(context).primaryColor)
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             SizedBox(
               height: 30.0,
             ),
-            Image.asset(
-              'images/taxi.png',
-              width: 100,
+            // Image.asset(
+            //   'assets/images/taxi.png',
+            //   width: 100,
+            // ),
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: AssetImage(
+                  'assets/images/taxi.png',
+
+              ),
             ),
             SizedBox(
               height: 16.0,
             ),
             Text(
               'NEW TRIP REQUEST',
-              style: GoogleFonts.roboto(fontSize: 18),
+              style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).scaffoldBackgroundColor,
+              ),
             ),
             SizedBox(
               height: 30.0,
@@ -57,7 +72,7 @@ class NotificationDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Image.asset(
-                        'images/pickicon.png',
+                        'assets/images/pickicon.png',
                         height: 16,
                         width: 16,
                       ),
@@ -68,7 +83,11 @@ class NotificationDialog extends StatelessWidget {
                           child: Container(
                               child: Text(
                                 tripDetails.pickupAddress,
-                                style: GoogleFonts.roboto(fontSize: 18),
+                                style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).scaffoldBackgroundColor,
+                              ),
+
                               )))
                     ],
                   ),
@@ -79,7 +98,7 @@ class NotificationDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Image.asset(
-                        'images/desticon.png',
+                        'assets/images/desticon.png',
                         height: 16,
                         width: 16,
                       ),
@@ -90,7 +109,10 @@ class NotificationDialog extends StatelessWidget {
                           child: Container(
                               child: Text(
                                 tripDetails.destinationAddress,
-                                style: GoogleFonts.roboto(fontSize: 18),
+                                style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                ),
                               )))
                     ],
                   ),
@@ -133,6 +155,7 @@ class NotificationDialog extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: Theme.of(context).textTheme.headline6!.color,
+                          border: Border.all(color:Theme.of(context).primaryColor)
                         ),
                         child: Center(
                           child: Text(
@@ -155,12 +178,6 @@ class NotificationDialog extends StatelessWidget {
                       highlightColor: Colors.transparent,
                       splashColor: Colors.transparent,
                       onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => SignUpScreen(),
-                        //   ),
-                        // );
                         print('Request Accepted..');
                         checkAvailablity(context);
                       },
@@ -169,6 +186,7 @@ class NotificationDialog extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
                           color: Theme.of(context).textTheme.headline6!.color,
+                          border: Border.all(color:Theme.of(context).primaryColor)
                         ),
                         child: Center(
                           child: Text(
@@ -213,7 +231,7 @@ class NotificationDialog extends StatelessWidget {
 
       print('Inside DataSnapshot.. On Location drivers/${CustomParameters.currentFirebaseUser.uid}/profile/newtrip');
 
-      Navigator.pop(context);
+      //Navigator.pop(context);
       Navigator.pop(context);
 
       String thisRideID = "";
@@ -248,15 +266,15 @@ class NotificationDialog extends StatelessWidget {
         CommonService.disableHomTabLocationUpdates();
 
         //changedx1
-        // Navigator.push(
-        //     context,
-        //     MaterialPageRoute(
-        //       builder: (context) => PickupScreen(
-        //         tripDetails: tripDetails,
-        //         restartRide: false,
-        //         incomeType: 1,
-        //       ),
-        //     ));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PickupScreen(
+                tripDetails: tripDetails,
+                restartRide: false,
+                incomeType: 1,
+              ),
+            ));
 
 
       } else if (thisRideID == 'cancelled') {

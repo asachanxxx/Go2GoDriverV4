@@ -10,8 +10,10 @@ import 'package:my_cab_driver/auth/legacyLoginScreen.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/auth/loginScreen.dart';
 import 'package:my_cab_driver/e2e/UITest.dart';
+import 'package:my_cab_driver/home/VoiceTripRequest.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/setting/settingScreen.dart';
+import 'package:wakelock/wakelock.dart';
 import 'appTheme.dart';
 import 'auth/signUpScreen.dart';
 import 'history/historyScreen.dart';
@@ -76,7 +78,7 @@ void main() async{
     badge: true,
     sound: true,
   );
-
+  Wakelock.enable();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -210,9 +212,10 @@ class _MyAppState extends State<MyApp> {
       return routeName;
     } else {
       CustomParameters.currentFirebaseUser = currentFirebaseUser!;
+
       var hasAssociateDriverAccount =  AuthService()
           .getCheckUidHasDriverAccount(currentFirebaseUser.uid);
-      routeName = Routes.UITEST;
+      routeName = Routes.HOME;
     }
     return routeName;
   }
@@ -232,6 +235,7 @@ class _MyAppState extends State<MyApp> {
     Routes.LOGIN: (BuildContext context) => new LoginScreen(),
     Routes.DOCS: (BuildContext context) => new DocumentInfo(),
     Routes.UITEST: (BuildContext context) => new UiTest(),
+    Routes.VOICETRIP: (BuildContext context) => new VoiceTripRequest(),
   };
 }
 
@@ -249,6 +253,7 @@ class Routes {
   static const String WALLET = "/wallet/myWallet";
   static const String DOCS = "/auth/documentInfo";
   static const String UITEST = "/e2e/UITest";
+  static const String VOICETRIP = "/home/VoiceTripRequest";
 }
 
 loading(context, testToDisplay){

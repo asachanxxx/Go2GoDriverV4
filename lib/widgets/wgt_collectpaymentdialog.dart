@@ -17,8 +17,13 @@ class CollectPayment extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      backgroundColor: Colors.transparent,
+      backgroundColor: Theme.of(context).dividerColor,
       child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+              color: Colors.black26,
+              border: Border.all(color:Theme.of(context).primaryColor)
+          ),
         margin: EdgeInsets.all(4.0),
         width: double.infinity,
         //decoration: ThemeLight.ButtonPrimaryDeco,
@@ -28,7 +33,7 @@ class CollectPayment extends StatelessWidget {
             SizedBox(
               height: 20,
             ),
-            Text('${paymentMethod.toUpperCase()} PAYMENT',style: GoogleFonts.roboto(fontSize: 25, color: Theme.of(context).textTheme.headline6!.color)),
+            Text('${paymentMethod.toUpperCase()} PAYMENT',style: GoogleFonts.roboto(fontSize: 25, color: Theme.of(context).scaffoldBackgroundColor)),
             SizedBox(
               height: 20,
             ),
@@ -39,7 +44,7 @@ class CollectPayment extends StatelessWidget {
             ),
             Text(
               'LKR $fares.00',
-              style: GoogleFonts.roboto(fontSize: 35, color:  Theme.of(context).textTheme.headline6!.color),
+              style: GoogleFonts.roboto(fontSize: 35, color:  Theme.of(context).scaffoldBackgroundColor),
             ),
             SizedBox(
               height: 16,
@@ -49,7 +54,7 @@ class CollectPayment extends StatelessWidget {
               child: Text(
                 'Amount above is the total fares to be charged to the rider(ඉහත මුදල යනු  පාරිබෝගිකයාගෙන් අය කළ යුතු මුළු ගාස්තු වේ)',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(color: Color(0xFF000000)),
+                style: GoogleFonts.roboto(color: Theme.of(context).scaffoldBackgroundColor),
               ),
             ),
             SizedBox(
@@ -57,10 +62,12 @@ class CollectPayment extends StatelessWidget {
             ),
             Container(
               width: 230,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child:
               InkWell(
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
+
+                highlightColor: Theme.of(context).scaffoldBackgroundColor,
+                splashColor: Theme.of(context).scaffoldBackgroundColor,
                 onTap: () {
                   if(CustomParameters.appRestaredMiddleOfRide){
                     CustomParameters.appRestaredMiddleOfRide = false;
@@ -75,16 +82,34 @@ class CollectPayment extends StatelessWidget {
                     Navigator.pop(context);
                   }
                   CommonService.enableHomTabLocationUpdates();
-
-
                 },
-                child: Text(
-                  AppLocalizations.of((paymentMethod == 'cash') ? 'COLLECT CASH' : 'CONFIRM'),
-                  style: Theme.of(context).textTheme.button!.copyWith(
+                child:
+                Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
                     color: Theme.of(context).textTheme.headline6!.color,
-                    fontWeight: FontWeight.bold,
+                  ),
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of((paymentMethod == 'cash') ? 'COLLECT CASH' : 'CONFIRM'),
+                      style: Theme.of(context).textTheme.button!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                    ),
                   ),
                 ),
+                // Text(
+                //   AppLocalizations.of((paymentMethod == 'cash') ? 'COLLECT CASH' : 'CONFIRM'),
+                //   style: Theme.of(context).textTheme.button!.copyWith(
+                //     color: Theme.of(context).scaffoldBackgroundColor,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
+
+
               ),
 
             ),

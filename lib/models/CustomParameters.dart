@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:background_location/background_location.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:my_cab_driver/models/Customer.dart';
 import 'package:my_cab_driver/models/Driver.dart';
 import 'package:my_cab_driver/models/PaymentDetails.dart';
 import 'package:my_cab_driver/models/SystemSettings.dart';
@@ -33,13 +36,14 @@ class CustomParameters{
   static late String token;
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
   static late AndroidNotificationChannel channel;
-  static Driver currentDriverInfo = Driver(fullName: "", email: "", phone: "", id: "", carModel: "", carColor: "", vehicleNumber: "", SCR: 6.00, ODR: 10, nic: "",driverLevel: '');
+  static Driver currentDriverInfo = Driver(fullName: "", email: "", phone: "", id: "", carModel: "", carColor: "", vehicleNumber: "", SCR: 6.00, ODR: 10, nic: "",driverLevel: '', driverId: '');
   static late VehicleInfomation currentVehicleInfomation;
   static DailyParameters dailyParameters = DailyParameters(earning: 0.00,commission: 0.00,driveHours: 0.00,totalDistance: 0.00,totalTrips: 0);
   static late PaymentDetails paymentDetails;
   static bool appRestaredMiddleOfRide = false;
   static final defaultLocationLat = 6.878947;
   static final defaultLocationLng = 79.921883;
+  static Customer selectedCustomer = Customer(fullName: "", phoneNumber: "", driverID: "", CustomerID: "", Id: "", nicName: "");
 
   static final CameraPosition googlePlex = CameraPosition(
     target: LatLng(6.885173, 80.015352),
@@ -85,4 +89,23 @@ class CustomParameters{
 
     return GlobalVtype;
   }
+
+  static InputDecoration getInputDecorationRegister(BuildContext context, String labelText, Icon ico) {
+    return InputDecoration(
+      contentPadding: EdgeInsets.all(10.0),
+      labelStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 16),
+      hintStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 14),
+      prefixIcon: ico,
+      border: new OutlineInputBorder(
+        borderRadius: const BorderRadius.all(
+          Radius.circular(7.0),
+        ),
+        borderSide: new BorderSide(
+          color: Colors.pinkAccent,
+          width: 1.0,
+        ),
+      ),
+    );
+  }
+
 }

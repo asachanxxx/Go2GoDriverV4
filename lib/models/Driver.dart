@@ -7,6 +7,7 @@ class Driver {
   String email="";
   String phone="";
   String id="";
+  String driverId="";
   String carMake="";
   String carModel="";
   String carColor="";
@@ -27,12 +28,14 @@ class Driver {
         required this.SCR,
         required this.ODR,
         required this.nic,
-        required this.driverLevel
+        required this.driverLevel,
+        required this.driverId
       });
 
   Driver.fromSnapshot(DataSnapshot snapshot) {
     id = snapshot.value['key'];
     phone = snapshot.value['phoneNumber'];
+    driverId = snapshot.value['id'];
     email = snapshot.value['email'];
     fullName = snapshot.value['fullName'];
     nic = snapshot.value['nic'];

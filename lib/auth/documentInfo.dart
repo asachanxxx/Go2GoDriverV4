@@ -109,7 +109,7 @@ class _SignUpScreenState extends State<DocumentInfo> {
     appBarheight = AppBar().preferredSize.height + MediaQuery
         .of(context)
         .padding
-        .top - 50;
+        .top - 20;
     return Scaffold(
       backgroundColor: Theme
           .of(context)
@@ -127,9 +127,9 @@ class _SignUpScreenState extends State<DocumentInfo> {
               Expanded(
                 child: ListView(
                   children: <Widget>[
-                    SizedBox(
-                      height: appBarheight,
-                    ),
+                    // SizedBox(
+                    //   height: appBarheight,
+                    // ),
                     Card(
                       color: Theme
                           .of(context)

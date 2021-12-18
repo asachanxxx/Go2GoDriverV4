@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/Services/commonService.dart';
 import 'package:my_cab_driver/Services/financeServices.dart';
@@ -59,6 +60,31 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
+
+  void availabilityButtonPress() async {
+    print("HomeTab- availabilityButtonPress Start of the method");
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.mobile &&
+        connectivityResult != ConnectivityResult.wifi) {
+      showAlert(
+          context,'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
+          );
+      return;
+    }
+
+    print("HomeTab- availabilityButtonPress isOnlineStatus =   $isOffline");
+    // if (!isOffline) {
+    //   goOnline();
+    //   //getLocationUpdates();
+    //   setState(() {
+    //     // CustomParameters.availabilityColor = Colors.greenAccent;
+    //     // CustomParameters.availabilityTitle = 'GO OFFLINE';
+    //     // isAvailable = true;
+    //   });
+    // }
+  }
+
+
   ///Getting driver information
   Future<void> getCurrentDriverInfo(Location currentPositionx) async {
     print("Inside getCurrentDriverInfo");
@@ -95,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (inMiddleOfTrip) {
           //restartRide();
         }
-        //availabilityButtonPress();
+        availabilityButtonPress();
       }
     });
 
@@ -151,188 +177,199 @@ class _HomeScreenState extends State<HomeScreen> {
     seticonimage(context);
     seticonimage2(context);
     seticonimage3(context);
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: FutureBuilder<bool>(
-        future: _future, // a Future<String> or null
-        builder: (BuildContext context,
-            AsyncSnapshot<bool> snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-            return loadingIndicators('Waiting for connection....');
-            case ConnectionState.waiting:
-              return loadingIndicators('Initializing....');
-            default:
-              if (snapshot.hasError) {
-                return loadingIndicators('Error: ${snapshot.error}');
-              }
-              else {
-                return Scaffold(
-                  key: _scaffoldKey,
-                  drawer: SizedBox(
-                    width: MediaQuery
-                        .of(context)
-                        .size
-                        .width * 0.75 < 400 ? MediaQuery
-                        .of(context)
-                        .size
-                        .width * 0.75 : 350,
-                    child: Drawer(
-                      child: AppDrawer(
-                        selectItemName: 'Home',
+    return WillPopScope(
+      onWillPop: () async {
+        showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(title: Text(
+                  'You cannot go back from this screen. please close the app if you want to exit(ඔබට මෙම මෙනුවෙන් ඉවතට යා නොහැක. එසේ කිරීමට Go2Go යෙදුම මෙනුවෙන් වසා දමන්න )',
+                  style: GoogleFonts.roboto(
+                      fontSize: 15, color: Color(0xFFd32f2f)),),
+                    actions: <Widget>[
+                      ElevatedButton(
+                          child: const Text('OK'),
+                          onPressed: () => Navigator.of(context).pop(false)),
+                    ]));
+
+        return false;
+      },
+      child: Container(
+        color:Theme.of(context).scaffoldBackgroundColor,
+        child: FutureBuilder<bool>(
+          future: _future, // a Future<String> or null
+          builder: (BuildContext context,
+              AsyncSnapshot<bool> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              return loadingIndicators('Waiting for connection....');
+              case ConnectionState.waiting:
+                return loadingIndicators('Initializing....');
+              default:
+                if (snapshot.hasError) {
+                  return loadingIndicators('Error: ${snapshot.error}');
+                }
+                else {
+                  return Scaffold(
+                    key: _scaffoldKey,
+                    drawer: SizedBox(
+                      width: MediaQuery
+                          .of(context)
+                          .size
+                          .width * 0.75 < 400 ? MediaQuery
+                          .of(context)
+                          .size
+                          .width * 0.75 : 350,
+                      child: Drawer(
+                        child: AppDrawer(
+                          selectItemName: 'Home',
+                        ),
                       ),
                     ),
-                  ),
-                  appBar: AppBar(
-                    backgroundColor: Theme
-                        .of(context)
-                        .scaffoldBackgroundColor,
-                    automaticallyImplyLeading: false,
-                    title: Row(
-                      children: <Widget>[
-                        SizedBox(
-                          height: AppBar().preferredSize.height,
-                          width: AppBar().preferredSize.height + 40,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              alignment: Alignment.centerLeft,
-                              child: GestureDetector(
-                                onTap: () {
-                                  _scaffoldKey.currentState!.openDrawer();
-                                },
-                                child: Icon(
-                                  Icons.dehaze,
-                                  color: Theme
-                                      .of(context)
-                                      .textTheme
-                                      .headline6!
-                                      .color,
+                    appBar: AppBar(
+                      backgroundColor: isOffline? Theme.of(context).primaryColor : Theme.of(context).scaffoldBackgroundColor ,
+                      automaticallyImplyLeading: false,
+                      title: Row(
+                        children: <Widget>[
+                          SizedBox(
+                            height: AppBar().preferredSize.height,
+                            width: AppBar().preferredSize.height + 40,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                alignment: Alignment.centerLeft,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _scaffoldKey.currentState!.openDrawer();
+                                  },
+                                  child: Icon(
+                                    Icons.dehaze,
+                                    color: Theme
+                                        .of(context)
+                                        .textTheme
+                                        .headline6!
+                                        .color,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: !isOffline
-                              ? Text(
-                            AppLocalizations.of('Offline'),
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .headline6!
-                                .copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme
+                          Expanded(
+                            child: !isOffline
+                                ? Text(
+                              AppLocalizations.of('OFFLINE'),
+                              style: Theme
                                   .of(context)
                                   .textTheme
                                   .headline6!
-                                  .color,
-                            ),
-                            textAlign: TextAlign.center,
-                          )
-                              : Text(
-                            AppLocalizations.of('Online'),
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .headline6!
-                                .copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme
+                                  .copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .headline6!
+                                    .color,
+                              ),
+                              textAlign: TextAlign.center,
+                            )
+                                : Text(
+                              AppLocalizations.of('ONLINE'),
+                              style: Theme
                                   .of(context)
                                   .textTheme
                                   .headline6!
-                                  .color,
+                                  .copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme
+                                    .of(context).canvasColor,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
+                          SizedBox(
+                            height: AppBar().preferredSize.height,
+                            width: AppBar().preferredSize.height + 40,
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              child: Switch(
+                                activeColor: Theme.of(context).disabledColor,
+                                value: isOffline,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    isOffline = !isOffline;
+                                    offLineOnline(isOffline);
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    body: Stack(
+                      children: <Widget>[
+                        GoogleMap(
+                          mapType: MapType.normal,
+                          myLocationButtonEnabled: true,
+                          myLocationEnabled: true,
+                          zoomGesturesEnabled: true,
+                          zoomControlsEnabled: true,
+
+                          initialCameraPosition: CustomParameters.googlePlex,
+                          onMapCreated: (GoogleMapController controller) {
+                            _controller.complete(controller);
+                            mapController = controller;
+                            setLDMapStyle();
+                          },
+                          // markers: Set<Marker>.of(getMarkerList(context).values),
+                          // polylines: Set<Polyline>.of(
+                          //     getPolyLine(context).values),
                         ),
-                        SizedBox(
-                          height: AppBar().preferredSize.height,
-                          width: AppBar().preferredSize.height + 40,
-                          child: Container(
-                            alignment: Alignment.centerRight,
-                            child: Switch(
-                              activeColor: Theme
-                                  .of(context)
-                                  .primaryColor,
-                              value: isOffline,
-                              onChanged: (bool value) {
-                                setState(() {
-                                  isOffline = !isOffline;
-                                  offLineOnline(isOffline);
-                                });
-                              },
+                        !isOffline
+                            ? Column(
+                          children: <Widget>[
+                            offLineMode(),
+                            Expanded(
+                              child: SizedBox(),
                             ),
-                          ),
+                            myLocation(),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            offLineModeDetail(),
+                            Container(
+                              height: MediaQuery
+                                  .of(context)
+                                  .padding
+                                  .bottom,
+                              color: Theme
+                                  .of(context)
+                                  .scaffoldBackgroundColor,
+                            )
+                          ],
+                        )
+                            : Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Expanded(
+                              child: SizedBox(),
+                            ),
+                            myLocation(),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            offLineModeDetail(),
+                            //onLineModeDetail(),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  body: Stack(
-                    children: <Widget>[
-                      GoogleMap(
-                        mapType: MapType.normal,
-                        myLocationButtonEnabled: true,
-                        myLocationEnabled: true,
-                        zoomGesturesEnabled: true,
-                        zoomControlsEnabled: true,
-
-                        initialCameraPosition: CustomParameters.googlePlex,
-                        onMapCreated: (GoogleMapController controller) {
-                          _controller.complete(controller);
-                          mapController = controller;
-                          setLDMapStyle();
-                        },
-                        // markers: Set<Marker>.of(getMarkerList(context).values),
-                        // polylines: Set<Polyline>.of(
-                        //     getPolyLine(context).values),
-                      ),
-                      !isOffline
-                          ? Column(
-                        children: <Widget>[
-                          offLineMode(),
-                          Expanded(
-                            child: SizedBox(),
-                          ),
-                          myLocation(),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          offLineModeDetail(),
-                          Container(
-                            height: MediaQuery
-                                .of(context)
-                                .padding
-                                .bottom,
-                            color: Theme
-                                .of(context)
-                                .scaffoldBackgroundColor,
-                          )
-                        ],
-                      )
-                          : Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Expanded(
-                            child: SizedBox(),
-                          ),
-                          myLocation(),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          offLineModeDetail(),
-                          //onLineModeDetail(),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }
-          }
-        },
-      )
+                  );
+                }
+            }
+          },
+        )
+      ),
     );
   }
 
@@ -349,6 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   ///This responsible to go online for the driver. with help of geofire /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*
   void goOnline() async {
+    isOffline = true;
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
@@ -805,6 +843,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       AppLocalizations.of(CustomParameters.currentDriverInfo.fullName),
                       style: Theme.of(context).textTheme.headline6!.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 17,
                             color: Theme.of(context).textTheme.headline6!.color,
                           ),
                     ),

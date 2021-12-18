@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
+import 'package:my_cab_driver/Services/authService.dart';
 import 'package:my_cab_driver/constance/constance.dart';
+import 'package:my_cab_driver/models/CustomParameters.dart';
 import '../main.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -25,6 +27,9 @@ class _AppDrawerState extends State<AppDrawer> {
               color: Theme.of(context).primaryColor,
               child: Column(
                 children: <Widget>[
+                  SizedBox(
+                    height: 10,
+                  ),
                   Expanded(
                     flex: 2,
                     child: SizedBox(),
@@ -35,9 +40,9 @@ class _AppDrawerState extends State<AppDrawer> {
                       children: <Widget>[
                         CircleAvatar(
                           backgroundColor: Colors.white,
-                          radius: 30,
+                          radius: 20,
                           child: new ClipRRect(
-                            borderRadius: new BorderRadius.circular(50),
+                            borderRadius: new BorderRadius.circular(30),
                             child: Image.asset(
                               ConstanceData.userImage,
                               fit: BoxFit.fill,
@@ -51,11 +56,12 @@ class _AppDrawerState extends State<AppDrawer> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              AppLocalizations.of('Martha Banks'),
+                              AppLocalizations.of(CustomParameters.currentDriverInfo.fullName),
                               style: Theme.of(context)
                                   .textTheme
                                   .headline6!
                                   .copyWith(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: ConstanceData.secoundryFontColor,
                                   ),
@@ -78,21 +84,43 @@ class _AppDrawerState extends State<AppDrawer> {
                                     size: 16,
                                   ),
                                   Text(
-                                    'Gold Member',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .button!
-                                        .copyWith(
+                                    CustomParameters.currentDriverInfo.driverId,
+                                    style: Theme.of(context).textTheme.button!.copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .headline6!
-                                              .color,
-                                        ),
+                                          fontSize: 13,
+                                          color: Theme.of(context).textTheme.headline6!.color,),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 4,
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color:
+                                Theme.of(context).scaffoldBackgroundColor,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.star,
+                                    size: 16,
+                                  ),
+                                  Text(
+                                    CustomParameters.currentDriverInfo.email,
+                                    style: Theme.of(context).textTheme.button!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: Theme.of(context).textTheme.headline6!.color,),
                                   ),
                                 ],
                               ),
                             )
+
                           ],
                         ),
                       ],
@@ -102,113 +130,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     flex: 1,
                     child: SizedBox(),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          Icon(
-                            FontAwesomeIcons.clock,
-                            color: ConstanceData.secoundryFontColor,
-                            size: 18,
-                          ),
-                          SizedBox(
-                            height: 4,
-                          ),
-                          Text(
-                            '10.2',
-                            style:
-                                Theme.of(context).textTheme.subtitle1!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ConstanceData.secoundryFontColor,
-                                    ),
-                          ),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                AppLocalizations.of('Hourse online'),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ConstanceData.secoundryFontColor,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: <Widget>[
-                          Icon(
-                            FontAwesomeIcons.tachometerAlt,
-                            color: ConstanceData.secoundryFontColor,
-                            size: 18,
-                          ),
-                          SizedBox(
-                            height: 4,
-                          ),
-                          Text(
-                            '30 KM',
-                            style:
-                                Theme.of(context).textTheme.subtitle1!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ConstanceData.secoundryFontColor,
-                                    ),
-                          ),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                AppLocalizations.of('Total Distance'),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ConstanceData.secoundryFontColor,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: <Widget>[
-                          Icon(
-                            FontAwesomeIcons.rocket,
-                            color: ConstanceData.secoundryFontColor,
-                            size: 20,
-                          ),
-                          SizedBox(
-                            height: 4,
-                          ),
-                          Text(
-                            '20',
-                            style:
-                                Theme.of(context).textTheme.subtitle1!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ConstanceData.secoundryFontColor,
-                                    ),
-                          ),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                AppLocalizations.of('Total Job'),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption!
-                                    .copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: ConstanceData.secoundryFontColor,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
                   SizedBox(
                     height: 8,
                   )
@@ -217,7 +138,7 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 5,
             child: columDetail(),
           )
         ],
@@ -366,7 +287,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   Navigator.pop(context);
                   if (widget.selectItemName != 'booking') {
                     Navigator.pushNamedAndRemoveUntil(context,
-                        Routes.NOTIFICATION, (Route<dynamic> route) => false);
+                        Routes.TRIPBOOKING, (Route<dynamic> route) => false);
                   }
                 },
                 child: Padding(
@@ -388,6 +309,48 @@ class _AppDrawerState extends State<AppDrawer> {
                       ),
                       Text(
                         AppLocalizations.of('Trip Bookings'),
+                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color:
+                          Theme.of(context).textTheme.headline6!.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 32,
+              ),
+              InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                onTap: () {
+                  Navigator.pop(context);
+                  if (widget.selectItemName != 'Customers') {
+                    Navigator.pushNamedAndRemoveUntil(context, Routes.CUSTOMERS,
+                            (Route<dynamic> route) => false);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Row(
+                    children: <Widget>[
+                      widget.selectItemName == 'Customers'
+                          ? selectedData()
+                          : SizedBox(),
+                      Icon(
+                        FontAwesomeIcons.history,
+                        size: 20,
+                        color: widget.selectItemName == 'Customers'
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).dividerColor,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        AppLocalizations.of('My Customers'),
                         style: Theme.of(context).textTheme.bodyText2!.copyWith(
                           fontWeight: FontWeight.bold,
                           color:
@@ -573,8 +536,9 @@ class _AppDrawerState extends State<AppDrawer> {
                 highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
                 onTap: () {
+                  AuthService.signOut();
                   Navigator.pushNamedAndRemoveUntil(context,
-                      Routes.INTRODUCTION, (Route<dynamic> route) => false);
+                      Routes.LOGIN2, (Route<dynamic> route) => false);
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4),

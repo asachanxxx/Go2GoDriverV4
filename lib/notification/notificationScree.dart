@@ -21,19 +21,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
 
 
-    Widget returnControlMessage(
-        String message1, String message2, bool isError) {
+    Widget returnControlMessage(String message1, String message2,
+        bool isError) {
       return Container(
           width: double.infinity,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: <Widget>[
-                new Text(
+                Text(
                   message1,
                   style: GoogleFonts.roboto(
                       fontSize: 15,
-                      color: isError ? Color(0xFFd32f2f) : Theme.of(context).primaryColor,
+                      color: isError ? Color(0xFFd32f2f) : Color(0xFFff6f00),
                       fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
@@ -43,7 +43,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 SizedBox(
                   height: 10,
                 ),
-                new Text(
+                Text(
                   message2,
                   style: GoogleFonts.roboto(fontSize: 15),
                 ),
@@ -54,6 +54,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     var builderParam = StreamBuilder(
         stream: FirebaseDatabase.instance
+            .reference()
             .reference()
             .child('rideBookingsdriverList/${CustomParameters.currentFirebaseUser.uid}').orderByChild("accepted").equalTo(false)
             .limitToLast(10)
@@ -66,97 +67,170 @@ class _NotificationScreenState extends State<NotificationScreen> {
               if (snapshot.data.snapshot != null) {
                 if (snapshot.data.snapshot.value != null) {
                   if (snapshot.hasData) {
-
                     newwidget = new Container(child: Text("Hello"),);
                     switch (snapshot.connectionState) {
                       case ConnectionState.none:
                         newwidget = Text("Loading......");
                         break;
                       default:
-                        Map<dynamic, dynamic> map = snapshot.data.snapshot.value;
+                        Map<dynamic, dynamic> map = snapshot.data.snapshot
+                            .value;
                         list = map.values.toList();
                         print("rideBookingsdriverList snapshot list $list");
                         newwidget = ListView.builder(
                           itemCount: list.length,
                           itemBuilder: (BuildContext context, int index) {
                             print(" rideBookingsdriverList ${list[index]}");
-                            var mType = list[index]["type"] != null ? list[index]["type"] :"Message";
-                            return   Card(
-                              color: Color(0xFFcfd8dc),
-                              child: Column(
-                                children: <Widget>[
-                                  SizedBox(height: 8,),
-                                  Row(
-                                    children:<Widget> [
-                                      SizedBox(width:12 ),
-                                      Icon(Icons.emoji_transportation,color: Color(0xFFf57f17),),
-                                      SizedBox(width:12 ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children:<Widget> [
-                                            // Text("${list[index]["bookingId"]}",overflow: TextOverflow.ellipsis,maxLines: 1, style: GoogleFonts.roboto(fontSize: 15,fontWeight: FontWeight.normal ,color: Color(0xFF212121)),),
-                                            SizedBox(height: 5,),
-                                            Row(
-                                              children:<Widget> [
-                                                Text("From", style: GoogleFonts.roboto(color: Color(0xFF0097a7)),),
-                                                SizedBox(width: 5,),
-                                                Text(list[index]["PickUp"]["placeName"], style: GoogleFonts.roboto(),)
-                                              ],
-                                            ),
-                                            Row(
-                                              children:<Widget> [
-                                                Text("To     ", style: GoogleFonts.roboto(color: Color(0xFF0097a7)),),
-                                                SizedBox(width: 5,),
-                                                Text(list[index]["Drop"]["placeName"], style: GoogleFonts.roboto(),)
-                                              ],
-                                            ),
-                                            Row(
-                                              children:<Widget> [
-                                                Text("Time ", style: GoogleFonts.roboto(color: Color(0xFF0097a7)),),
-                                                SizedBox(width: 5,),
-                                                Text("${list[index]["tripDate"]["year"]}/${list[index]["tripDate"]["month"]}/${list[index]["tripDate"]["day"]} ${list[index]["triptime"]["hour"]}:${list[index]["triptime"]["minutes"]} PM", style: GoogleFonts.roboto(),)
-                                              ],
-                                            ),
-                                            Row(
-                                              children:<Widget> [
-                                                Text("UpAndDown ", style: GoogleFonts.roboto(color: Color(0xFF0097a7)),),
-                                                SizedBox(width: 5,),
-                                                Text("${list[index]["upAndDown"] == true ? 'Yes' : 'No'}"),
-                                                SizedBox(width: 5,),
-                                                Text("Trip For ", style: GoogleFonts.roboto(color: Color(0xFF0097a7)),),
-                                                SizedBox(width: 5,),
-                                                Text("${list[index]["tripMethod"] == 'passenger' ? 'Passenger' : 'Delivery'}")
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 8,),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0 , horizontal: 8.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children:<Widget> [
-                                        ConstrainedBox(
-                                          constraints: BoxConstraints.tightFor(width: 150, height: 30),
-                                          child: TaxiButtonSmallWithSizeSM(
-                                            title: "Accept Booking",
-                                            color:Theme.of(context).primaryColor,
-                                            fontSize: 14,
-                                            onPress: () async {
-                                              acceptBooking(list[index]["bookingId"]);
-                                            },
+                            var mType = list[index]["type"] != null
+                                ? list[index]["type"]
+                                : "Message";
+                            return
+                              Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Card(
+                                shape:  new RoundedRectangleBorder(
+                                    side: new BorderSide(color: Theme.of(context).primaryColor, width: 1.0),
+                                    borderRadius: BorderRadius.circular(4.0)),
+                                color: Color(0xFFfafafa),
+                                child:Container(
+                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child:
+
+                                    Row(
+                                      children: <Widget>[
+                                        CircleAvatar(
+                                          backgroundColor: Theme.of(context).primaryColor,
+                                          radius: 24,
+                                          child: Icon(
+                                            Icons.check_circle,
+                                            color: Theme.of(context).backgroundColor,
                                           ),
                                         ),
+                                        SizedBox(
+                                          width: 16,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Row(
+                                              children:<Widget> [
+                                                Text("From",
+                                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Theme.of(context).primaryColor,
+                                                    ),
+                                                ),
+                                                SizedBox(width: 5,),
+                                                Text(list[index]["PickUp"]["placeName"],
+                                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Theme.of(context).textTheme.headline6!.color,
+                                                    ),
+                                                )
+                                              ],
+                                            ),
+                                            Row(
+                                              children:<Widget> [
+                                                Text("To     ",
+                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).primaryColor,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 5,),
+                                                Text(list[index]["Drop"]["placeName"],
+                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).textTheme.headline6!.color,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                            Row(
+                                              children:<Widget> [
+                                                Text("Time ",
+                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).primaryColor,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 5,),
+                                                Text("${list[index]["tripDate"]["year"]}/${list[index]["tripDate"]["month"]}/${list[index]["tripDate"]["day"]} ${list[index]["triptime"]["hour"]}:${list[index]["triptime"]["minutes"]} PM",
+                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).textTheme.headline6!.color,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                            Row(
+                                              children:<Widget> [
+                                                Text("UpAndDown ",
+                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).primaryColor,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 5,),
+                                                Text("${list[index]["upAndDown"] == true ? 'Yes' : 'No'}",
+                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).textTheme.headline6!.color,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 5,),
+                                                Text("Trip For ",
+                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).primaryColor,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 5,),
+                                                Text("${list[index]["tripMethod"] == 'passenger' ? 'Passenger' : 'Delivery'}",
+                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Theme.of(context).textTheme.headline6!.color,
+                                                  ),
+                                                ),
+
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            InkWell(
+                                              highlightColor: Colors.transparent,
+                                              splashColor: Colors.transparent,
+                                              onTap: () async {
+                                                acceptBooking(list[index]["bookingId"]);
+
+                                              },
+                                              child: Container(
+                                                height: 30,
+                                                width: 100,
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  color: Theme.of(context).primaryColor,
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    AppLocalizations.of('Accept'),
+                                                    style: Theme.of(context).textTheme.button!.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Theme.of(context).scaffoldBackgroundColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
                                       ],
                                     ),
                                   ),
-                                  SizedBox(height: 8,),
-                                  //BrandDivider()
-                                ],
+                                ),
                               ),
                             );
                           },
@@ -166,17 +240,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   } else {
                     newwidget = Text("Loading......");
                   }
-                }else{
-                  newwidget= returnControlMessage("No Messages1","No messages Found.", false);
+                } else {
+                  newwidget = returnControlMessage(
+                      "No Messages1", "No messages Found.", false);
                 }
-              }else{
-                newwidget= returnControlMessage("No Messages2","No messages Found.", false);
+              } else {
+                newwidget = returnControlMessage(
+                    "No Messages2", "No messages Found.", false);
               }
-            }else{
-              newwidget= returnControlMessage("No Messages3","No messages Found.", false);
+            } else {
+              newwidget = returnControlMessage(
+                  "No Messages3", "No messages Found.", false);
             }
-          }else{
-            newwidget= returnControlMessage("No Messages4","No messages Found.", false);
+          } else {
+            newwidget = returnControlMessage(
+                "No Messages4", "No messages Found.", false);
           }
           return newwidget;
         }
@@ -194,8 +272,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
       ),
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar:
+
+      AppBar(
+        backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
         title: Row(
           children: <Widget>[
@@ -223,7 +303,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 AppLocalizations.of('Notifications'),
                 style: Theme.of(context).textTheme.headline6!.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).textTheme.headline6!.color,
+                      color: Theme.of(context).backgroundColor,
                     ),
                 textAlign: TextAlign.center,
               ),
@@ -235,92 +315,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ],
         ),
       ),
-      body: Column(
+      body:
+      Column(
         children: <Widget>[
           Expanded(
-            child: ListView(
-              children: <Widget>[
-                SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: <Widget>[
-                        CircleAvatar(
-                          backgroundColor: HexColor("#4252FF"),
-                          radius: 24,
-                          child: Icon(
-                            Icons.check_circle,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 16,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              AppLocalizations.of('System'),
-                              style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).textTheme.headline6!.color,
-                                  ),
-                            ),
-                            SizedBox(
-                              height: 2,
-                            ),
-                            Text(
-                              AppLocalizations.of('Booking #1234 has been succsess.'),
-                              style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).textTheme.headline6!.color,
-                                  ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(
-                              height: 2,
-                            ),
-                            InkWell(
-                              highlightColor: Colors.transparent,
-                              splashColor: Colors.transparent,
-                              onTap: () async {
-
-
-                              },
-                              child: Container(
-                                height: 30,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Theme.of(context).textTheme.headline6!.color,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    AppLocalizations.of('Accept'),
-                                    style: Theme.of(context).textTheme.button!.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).scaffoldBackgroundColor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 1,
-                  color: Theme.of(context).dividerColor,
-                ),
-              ],
-            ),
+            child: builderParam
           ),
           SizedBox(
             height: MediaQuery.of(context).padding.bottom + 16,
@@ -328,9 +327,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ],
       ),
     );
-
-
-
   }
 
   void acceptBooking(String bookingID) async {

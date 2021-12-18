@@ -1,21 +1,20 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:animator/animator.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
 import 'package:my_cab_driver/Services/serialService.dart';
-import 'package:my_cab_driver/appTheme.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/drawer/drawer.dart';
+import 'package:my_cab_driver/main.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/models/Customer.dart';
 import 'package:my_cab_driver/widgets/devider_widget.dart';
@@ -41,14 +40,14 @@ enum SingingCharacter { passenger, delivery }
 typedef _Fn = void Function();
 
 /// Example app.
-class VoiceTripRequest extends StatefulWidget {
+class MyCustomers extends StatefulWidget {
   static const String Id = 'soundrecxx';
 
   @override
   _SimpleRecorderState createState() => _SimpleRecorderState();
 }
 
-class _SimpleRecorderState extends State<VoiceTripRequest> {
+class _SimpleRecorderState extends State<MyCustomers> {
   SingingCharacter? _character = SingingCharacter.passenger;
 
   FlutterSoundPlayer _mPlayer = FlutterSoundPlayer();
@@ -66,11 +65,11 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
   bool isOffline = false;
   bool isUpAndDown = false;
   bool isDelivery = false;
+
   IconData recorderIcon = Icons.mic;
 
   @override
   void initState() {
-    print('_character ==========> ${CustomParameters.selectedCustomer.phoneNumber}');
     super.initState();
     // Be careful : openAudioSession return a Future.
     // Do not access your FlutterSoundPlayer or FlutterSoundRecorder before the completion of the Future
@@ -184,10 +183,6 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
 
   @override
   Widget build(BuildContext context) {
-    // seticonimage(context);
-    // seticonimage2(context);
-    // seticonimage3(context);
-
     Widget returnControlMessage(String message1, String message2,
         bool isError) {
       return Container(
@@ -222,8 +217,8 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
     var futureBuilder = new StreamBuilder(
       stream: FirebaseDatabase.instance
           .reference()
-          .child('listTree/requestListVoice/')
-          .orderByChild('requestedDriverId')
+          .child('customersTemp')
+          .orderByChild('driverID')
           .equalTo(CustomParameters.currentFirebaseUser.uid)
           .onValue,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -260,17 +255,26 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
                     list = map.values.toList();
                     print("Key : ${snapshot.data.snapshot.value}");
                     newwidget = ListView.builder(
+
                       itemCount: list.length, //snapshot.data.length,
                       itemBuilder: (BuildContext context, int index) {
-                        print("list[index][phoneNumber] ${list[index]}");
+                        Customer cus = Customer(
+                            phoneNumber: list[index]["phoneNumber"],
+                            fullName: list[index]["fullName"],
+                            driverID: list[index]["driverID"],
+                            Id: list[index]["Id"],
+                            CustomerID: list[index]["key"],
+                            nicName:list[index]["nicName"] != null? list[index]["nicName"]: ""
+                        );
 
-                        return TripTile3(
-                          rideId: list[index]['Id'],
-                          datetime: list[index]['time'],
-                          keyx: list[index]['key'],
+                        print("Customer ID on Customer Tab $cus");
+                        return SearchCustomerTile(
+                          custommerObj: cus,
+                          isPickUpSearch: true,
+                          parentContext: context,
                         );
                       },
-                    );
+                  );
                 }
               } else {
                 print("No Customers .........");
@@ -318,7 +322,7 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
             .width * 0.75 : 350,
         child: Drawer(
           child: AppDrawer(
-            selectItemName: 'vtr',
+            selectItemName: 'Customers',
           ),
         ),
       ),
@@ -333,7 +337,7 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
               height: AppBar().preferredSize.height,
               width: AppBar().preferredSize.height + 40,
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(left: 8.0 , right: 8.0, ),
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: GestureDetector(
@@ -350,7 +354,7 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
             ),
             Expanded(
               child: Text(
-                AppLocalizations.of('Voice Trips'),
+                AppLocalizations.of('My Customers'),
                 style: Theme.of(context).textTheme.headline6!.copyWith(
                   fontWeight: FontWeight.bold,
                   color: ConstanceData.secoundryFontColor,
@@ -369,16 +373,16 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
         children: <Widget>[
           Column(
             children: <Widget>[
-              offLineMode(),
+              //offLineMode(),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   children: <Widget>[
                     Container(
-                      height: 400,
+                      height: 500,
                       decoration: BoxDecoration(
                         color: Color(0xFFeeeeee),
-                        borderRadius: BorderRadius.circular(10),
+                                                                                                                                                                                                                       borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                             width: 1.0, color: Color(0xFFe0e0e0)),
                       ),
@@ -402,88 +406,37 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
                   ],
                 ),
               ),
-
               SizedBox(
                 height: 10,
               ),
-
-              Container(
-                height: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    FloatingActionButton(
-                      heroTag: "btn1",
-                      onPressed: () {
-                        if (!_mRecorderIsInited ||
-                            !_mPlayer.isStopped) {} else {
-                          if (_mRecorder.isStopped) {
-                            record();
-                          } else {
-                            stopRecorder().then((value) =>
-                                setState(() {}));
-                          }
-                        }
-                        //Text(_mRecorder.isRecording ? 'Stop' : 'Record'),
-                        setState(() {
-                          isNewrecord.value = true;
-                          isNew = true;
-                        });
-                      },
-                      child: _mRecorder.isRecording
-                          ? Icon(Icons.pause)
-                          : Icon(Icons.mic),
-                      backgroundColor: Theme
-                          .of(context)
-                          .primaryColor,
-                      foregroundColor: Colors.white,
-                      hoverColor: Colors.white54,
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child:Container(
+                  height: 40,
+                  child:InkWell(
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    onTap: () async {
+                      Navigator.pushNamed(context, Routes.ADDCUSTOMERS);
+                    },
+                    child:
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      child: Center(
+                        child: Text(
+                          AppLocalizations.of('ADD CUSTOMER'),
+                          style: Theme.of(context).textTheme.button!.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: ConstanceData.secoundryFontColor,
+                          ),
+                        ),
+                      ),
                     ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    FloatingActionButton(
-                      heroTag: "btn2",
-                      onPressed: () {
-                        if (!_mPlayerIsInited ||
-                            !_mplaybackReady ||
-                            !_mRecorder.isStopped) {} else {
-                          if (_mPlayer.isStopped) {
-                            play();
-                          } else {
-                            stopPlayer().then((value) =>
-                                setState(() {}));
-                          }
-                        }
-                      },
-                      child: _mPlayer.isPlaying
-                          ? Icon(Icons.stop)
-                          : Icon(Icons.play_arrow),
-                      backgroundColor: _mPlayer.isPlaying
-                          ? Colors.white70
-                          : Color(0xFF616161),
-                      foregroundColor: Colors.white54,
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    FloatingActionButton(
-                      heroTag: "btn3",
-                      onPressed: () {
-                        if (!_mPlayerIsInited ||
-                            !_mplaybackReady ||
-                            !_mRecorder.isStopped) {} else {
-                          if (isNew!) {
-                            insertRequestVoice();
-                          }
-                        }
-                      },
-                      child: Icon(Icons.send),
-                      backgroundColor:
-                      isNew! ? Color(0xFFff6f00) : Color(
-                          0xFF616161),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -491,6 +444,29 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
         ],
       ),
     );
+  }
+  ///Show alerts /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
+  showAlert(context, message) {
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: "Go2Go Messaging",
+      desc: message,
+      style: AlertStyle(
+          descStyle: TextStyle(fontSize: 15),
+          titleStyle: TextStyle(color: Color(0xFFEB1465))
+      ),
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Ok",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          color: Color(0xFF222222),
+        )
+      ],
+    ).show();
   }
 
   Widget offLineMode() {
@@ -508,76 +484,6 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
             child: Column(
               children: <Widget>[
 
-                Row(
-                  children: <Widget>[
-                    Text(
-                      AppLocalizations.of('Two way trip'),
-                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        height: AppBar().preferredSize.height,
-                        width: AppBar().preferredSize.height + 40,
-                        child: Container(
-                          alignment: Alignment.centerRight,
-                          child: Switch(
-                            activeColor: Theme
-                                .of(context)
-                                .primaryColor,
-                            value: isUpAndDown,
-                            onChanged: (bool value) {
-                              setState(() {
-                                isUpAndDown = !isUpAndDown;
-                                print("isUpAndDown set to $isUpAndDown");
-                                //offLineOnline(isOffline);
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: <Widget>[
-                    Text(
-                      AppLocalizations.of('Trip For Delivery(Current:Passenger)'),
-                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        height: AppBar().preferredSize.height,
-                        width: AppBar().preferredSize.height + 40,
-                        child: Container(
-                          alignment: Alignment.centerRight,
-                          child: Switch(
-                            activeColor: Theme
-                                .of(context)
-                                .primaryColor,
-                            value: isDelivery,
-                            onChanged: (bool value) {
-                              setState(() {
-                                isDelivery = !isDelivery;
-                                print("isDelivery set to $isDelivery");
-                                //offLineOnline(isOffline);
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
 
 
               ],
@@ -587,7 +493,6 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
       ),
     );
   }
-
 
   void insertRequestVoice() async {
     BuildContext dialogContext = context;
@@ -617,17 +522,9 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
       uploadFile(outputFile, listUsers.key);
       var serial = await SerialService.getSerial(SetialTypes.voiceRideRequest);
 
-      print('_character ==========> ${_character.toString().substring(_character.toString().indexOf('.') + 1)}');
-
-      var incomingCustomer =  CustomParameters.selectedCustomer;
-      print('_character ==========> ${CustomParameters.selectedCustomer}');
-      Map customerMap = {
-        'key': incomingCustomer.key,
-        'fullName': incomingCustomer.fullName,
-        'phoneNumber': incomingCustomer.phoneNumber,
-        'driverID': incomingCustomer.driverID,
-      };
-
+      print(
+          '_character ==========> ${_character.toString().substring(
+              _character.toString().indexOf('.') + 1)}');
 
       Map fullMap = {
         'key': listUsers.key,
@@ -639,13 +536,11 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
         'completed': false,
         'time': DateTime.now().toString(),
         'upAndDown': isUpAndDown,
-        'status': 'Created',
-        'customer': customerMap
+        'status': 'Created'
       };
       print('fullMap ==========> ${fullMap}');
 
       listUsers.set(fullMap);
-      CustomParameters.selectedCustomer = Customer(fullName: "", phoneNumber: "", driverID: "", CustomerID: "", Id: "", nicName: "");
     } on FirebaseAuthException catch (e) {
       //Navigator.pop(context);
       if (e.code == 'weak-password') {
@@ -685,106 +580,58 @@ class _SimpleRecorderState extends State<VoiceTripRequest> {
     }
   }
 
-  showAlertDialog(BuildContext context, String Title, String content) {
-    // set up the button
-    Widget okButton = TextButton(
-      child: Text("OK"),
-      onPressed: () {},
-    );
+  // ///Widget for loading indications/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
+  // Widget loadingIndicators(String message) {
+  //   return Scaffold(
+  //       body: Container(
+  //         width: double.infinity,
+  //         decoration: BoxDecoration(
+  //           color: Theme
+  //               .of(context)
+  //               .scaffoldBackgroundColor,
+  //           borderRadius: BorderRadius.circular(12),
+  //           boxShadow: [
+  //             new BoxShadow(
+  //               color: AppTheme.isLightTheme
+  //                   ? Colors.black.withOpacity(0.2)
+  //                   : Colors.white.withOpacity(0.2),
+  //               blurRadius: 12,
+  //             ),
+  //           ],
+  //         ),
+  //
+  //         child: Column(
+  //           // Vertically center the widget inside the column
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: <Widget>[
+  //             Icon(
+  //               Icons.cloud_download_outlined,
+  //               color: Theme
+  //                   .of(context)
+  //                   .primaryColor,
+  //               size: 100,
+  //             ),
+  //             Text(AppLocalizations.of(message),
+  //               style: Theme
+  //                   .of(context)
+  //                   .textTheme
+  //                   .subtitle2!
+  //                   .copyWith(
+  //                 fontWeight: FontWeight.bold,
+  //                 color: Theme
+  //                     .of(context)
+  //                     .primaryColor,
+  //               ),
+  //             )
+  //
+  //           ],
+  //         ),
+  //       ));
+  // }
+  // void offLineOnline(status) {
+  //   if (status) {} else {}
+  // }
 
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text(Title),
-      content: Text(content),
-      actions: [
-        okButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
-  ///Widget for loading indications/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
-  Widget loadingIndicators(String message) {
-    return Scaffold(
-        body: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Theme
-                .of(context)
-                .scaffoldBackgroundColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              new BoxShadow(
-                color: AppTheme.isLightTheme
-                    ? Colors.black.withOpacity(0.2)
-                    : Colors.white.withOpacity(0.2),
-                blurRadius: 12,
-              ),
-            ],
-          ),
-
-          child: Column(
-            // Vertically center the widget inside the column
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons.cloud_download_outlined,
-                color: Theme
-                    .of(context)
-                    .primaryColor,
-                size: 100,
-              ),
-              Text(AppLocalizations.of(message),
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle2!
-                    .copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme
-                      .of(context)
-                      .primaryColor,
-                ),
-              )
-
-            ],
-          ),
-        ));
-  }
-  void offLineOnline(status) {
-    if (status) {} else {}
-  }
-
-  ///Show alerts /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
-  showAlert(context, message) {
-    Alert(
-      context: context,
-      type: AlertType.error,
-      title: "Go2Go Messaging",
-      desc: message,
-      style: AlertStyle(
-          descStyle: TextStyle(fontSize: 15),
-          titleStyle: TextStyle(color: Color(0xFFEB1465))
-      ),
-      buttons: [
-        DialogButton(
-          child: Text(
-            "Ok",
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-          onPressed: () => Navigator.pop(context),
-          color: Color(0xFF222222),
-        )
-      ],
-    ).show();
-  }
 
 
 }

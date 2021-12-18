@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
@@ -148,6 +149,7 @@ class NotificationDialog extends StatelessWidget {
                       highlightColor: Colors.transparent,
                       splashColor: Colors.transparent,
                       onTap: () {
+                        FlutterRingtonePlayer.stop();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -178,6 +180,7 @@ class NotificationDialog extends StatelessWidget {
                       highlightColor: Colors.transparent,
                       splashColor: Colors.transparent,
                       onTap: () {
+                        FlutterRingtonePlayer.stop();
                         print('Request Accepted..');
                         checkAvailablity(context);
                       },

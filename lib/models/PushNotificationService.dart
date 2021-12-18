@@ -7,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/models/TripDetails.dart';
@@ -49,8 +50,6 @@ class PushNotificationService {
       }else{
         print('Message object is null');
       }
-
-
       AndroidNotification? android = message.notification?.android;
       if (notification != null && android != null) {
         CustomParameters.flutterLocalNotificationsPlugin.show(
@@ -107,13 +106,14 @@ class PushNotificationService {
 
       if (snapshot.value != null) {
 
-        // CustomParameters.assetsAudioPlayer.open(
-        //   Audio('sounds/alert.mp3'),
-        //   loopMode: LoopMode.single,
-        // );
-        // CustomParameters.assetsAudioPlayer.play();
-
-
+        FlutterRingtonePlayer.playNotification(volume: 80 , looping: true);
+        FlutterRingtonePlayer.play(
+          android: AndroidSounds.ringtone,
+          ios: IosSounds.glass,
+          looping: true, // Android only - API >= 28
+          volume: 1, // Android only - API >= 28
+          asAlarm: false, // Android only - all APIs
+        );
 
         print('Inside Data SnapShot....');
         if (snapshot != null) {

@@ -210,132 +210,107 @@ class _PickupScreenState extends State<PickupScreen> {
     seticonimage(context);
     seticonimage2(context);
     seticonimage3(context);
-    return Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: FutureBuilder<bool>(
-          future: _future, // a Future<String> or null
-          builder: (BuildContext context,
-              AsyncSnapshot<bool> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-                return loadingIndicators('Waiting for connection....');
-              case ConnectionState.waiting:
-                return loadingIndicators('Initializing....');
-              default:
-                if (snapshot.hasError) {
-                  print('Error: ${snapshot.error}');
-                  return loadingIndicators('Error: ${snapshot.error}');
-                }
-                else {
-                  return SafeArea(
-                    child: Scaffold(
-                      key: _scaffoldKey,
-                      body: Stack(
-                        children: <Widget>[
-                          GoogleMap(
-                            mapType: MapType.normal,
-                            myLocationButtonEnabled: true,
-                            myLocationEnabled: true,
-                            zoomGesturesEnabled: true,
-                            zoomControlsEnabled: true,
-                            compassEnabled: true,
-                            mapToolbarEnabled: true,
-                            trafficEnabled: true,
-                            circles: _circles,
-                            markers: _markers,
-                            polylines: _polyLines,
+    return WillPopScope(
+      onWillPop: () async {
+        showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(title: Text(
+                  'You cannot go back from this screen. please close the app if you want to exit(ඔබට මෙම මෙනුවෙන් ඉවතට යා නොහැක. එසේ කිරීමට Go2Go යෙදුම මෙනුවෙන් වසා දමන්න )',
+                  style: GoogleFonts.roboto(
+                      fontSize: 15, color: Color(0xFFd32f2f)),),
+                    actions: <Widget>[
+                      ElevatedButton(
+                          child: const Text('OK'),
+                          onPressed: () => Navigator.of(context).pop(false)),
+                    ]));
 
-                            initialCameraPosition: CustomParameters.googlePlex,
-                            onMapCreated: (GoogleMapController controller)  async {
-                              _controller.complete(controller);
-                              mapController = controller;
-                              setLDMapStyle();
+        return false;
+      },
+      child: Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: FutureBuilder<bool>(
+            future: _future, // a Future<String> or null
+            builder: (BuildContext context,
+                AsyncSnapshot<bool> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return loadingIndicators('Waiting for connection....');
+                case ConnectionState.waiting:
+                  return loadingIndicators('Initializing....');
+                default:
+                  if (snapshot.hasError) {
+                    print('Error: ${snapshot.error}');
+                    return loadingIndicators('Error: ${snapshot.error}');
+                  }
+                  else {
+                    return SafeArea(
+                      child: Scaffold(
+                        key: _scaffoldKey,
+                        body: Stack(
+                          children: <Widget>[
+                            GoogleMap(
+                              mapType: MapType.normal,
+                              myLocationButtonEnabled: true,
+                              myLocationEnabled: true,
+                              zoomGesturesEnabled: true,
+                              zoomControlsEnabled: true,
+                              compassEnabled: true,
+                              mapToolbarEnabled: true,
+                              trafficEnabled: true,
+                              circles: _circles,
+                              markers: _markers,
+                              polylines: _polyLines,
 
-                              var currentLatLng =
-                              LatLng(CustomParameters.currentPosition.latitude!, CustomParameters.currentPosition.longitude!);
-                              var pickupLatLng = widget.tripDetails.pickup;
-                              await getDirection(currentLatLng, pickupLatLng);
-                              print("End Loading map");
-                            },
-                            // markers: Set<Marker>.of(getMarkerList(context).values),
-                            // polylines: Set<Polyline>.of(
-                            //     getPolyLine(context).values),
-                          ),
+                              initialCameraPosition: CustomParameters.googlePlex,
+                              onMapCreated: (GoogleMapController controller)  async {
+                                _controller.complete(controller);
+                                mapController = controller;
+                                setLDMapStyle();
 
-                          Column(
-                            children: <Widget>[
-                              offLineMode(),
-                              Expanded(
-                                child: SizedBox(),
-                              ),
-                              myLocation(),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              offLineModeDetail(),
-                              Container(
-                                height: MediaQuery
-                                    .of(context)
-                                    .padding
-                                    .bottom,
-                                color: Theme
-                                    .of(context)
-                                    .scaffoldBackgroundColor,
-                              )
-                            ],
-                          )
+                                var currentLatLng =
+                                LatLng(CustomParameters.currentPosition.latitude!, CustomParameters.currentPosition.longitude!);
+                                var pickupLatLng = widget.tripDetails.pickup;
+                                await getDirection(currentLatLng, pickupLatLng);
+                                print("End Loading map");
+                              },
+                              // markers: Set<Marker>.of(getMarkerList(context).values),
+                              // polylines: Set<Polyline>.of(
+                              //     getPolyLine(context).values),
+                            ),
 
-                          // !isOffline
-                          //     ? Column(
-                          //   children: <Widget>[
-                          //     offLineMode(),
-                          //     Expanded(
-                          //       child: SizedBox(),
-                          //     ),
-                          //     myLocation(),
-                          //     SizedBox(
-                          //       height: 10,
-                          //     ),
-                          //     offLineModeDetail(),
-                          //     Container(
-                          //       height: MediaQuery
-                          //           .of(context)
-                          //           .padding
-                          //           .bottom,
-                          //       color: Theme
-                          //           .of(context)
-                          //           .scaffoldBackgroundColor,
-                          //     )
-                          //   ],
-                          // )
-                          //     : Column(
-                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          //   children: <Widget>[
-                          //     Expanded(
-                          //       child: SizedBox(),
-                          //     ),
-                          //     myLocation(),
-                          //     SizedBox(
-                          //       height: 10,
-                          //     ),
-                          //     offLineModeDetail(),
-                          //     //onLineModeDetail(),
-                          //   ],
-                          // ),
+                            Column(
+                              children: <Widget>[
+                                offLineMode(),
+                                Expanded(
+                                  child: SizedBox(),
+                                ),
+                                myLocation(),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                offLineModeDetail(),
+                                Container(
+                                  height: MediaQuery
+                                      .of(context)
+                                      .padding
+                                      .bottom,
+                                  color: Theme
+                                      .of(context)
+                                      .scaffoldBackgroundColor,
+                                )
+                              ],
+                            )
 
-
-
-
-
-
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }
-            }
-          },
-        )
+                    );
+                  }
+              }
+            },
+          )
+      ),
     );
   }
 
@@ -582,7 +557,7 @@ class _PickupScreenState extends State<PickupScreen> {
                     Column(
                       children: <Widget>[
                         Text(
-                          '$durationCounter',
+                          '${Duration(seconds: durationCounter).inMinutes}',
                           style: Theme.of(context).textTheme.subtitle1!.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 32,
@@ -816,12 +791,6 @@ class _PickupScreenState extends State<PickupScreen> {
       }
     }
   }
-
-
-
-
-
-
 
 
   @override
@@ -1541,11 +1510,11 @@ class _PickupScreenState extends State<PickupScreen> {
       if (snapshot.value != null) {
         double oldEarnings = double.parse(snapshot.value.toString());
 
-        double adjustedEarnings = (fares.toDouble() * 0.85) + oldEarnings;
+        double adjustedEarnings = fares.toDouble() + oldEarnings;
 
         earningsRef.set(adjustedEarnings.toStringAsFixed(2));
       } else {
-        double adjustedEarnings = (fares.toDouble() * 0.85);
+        double adjustedEarnings = fares.toDouble() ;
         earningsRef.set(adjustedEarnings.toStringAsFixed(2));
       }
     });
@@ -1673,7 +1642,10 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   doRide() async {
-    await CustomParameters.homeTabPositionStream!.cancel();
+    if(CustomParameters.homeTabPositionStream != null) {
+      await CustomParameters.homeTabPositionStream!.cancel();
+    }
+
 
     CustomParameters.rideRef = FirebaseDatabase.instance
         .reference()

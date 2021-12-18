@@ -7,11 +7,17 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:my_cab_driver/Services/authService.dart';
 import 'package:my_cab_driver/auth/documentInfo.dart';
 import 'package:my_cab_driver/auth/legacyLoginScreen.dart';
+import 'package:my_cab_driver/auth/userstatusscreen_block.dart';
+import 'package:my_cab_driver/auth/userstatusscreen_pending.dart';
+import 'package:my_cab_driver/auth/vehicleInfo.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/auth/loginScreen.dart';
+import 'package:my_cab_driver/customerManagement/addCustomer.dart';
+import 'package:my_cab_driver/customerManagement/myCustomers.dart';
 import 'package:my_cab_driver/e2e/UITest.dart';
 import 'package:my_cab_driver/home/VoiceTripRequest.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
+import 'package:my_cab_driver/notification/tripbooking.dart';
 import 'package:my_cab_driver/setting/settingScreen.dart';
 import 'package:wakelock/wakelock.dart';
 import 'appTheme.dart';
@@ -24,7 +30,7 @@ import 'inviteFriend/inviteFriendScreen.dart';
 import 'notification/notificationScree.dart';
 import 'package:my_cab_driver/wallet/myWallet.dart';
 import 'constance/constance.dart' as constance;
-import 'package:flutter/foundation.dart';
+
 
 
 
@@ -113,7 +119,7 @@ class _MyAppState extends State<MyApp> {
     projectId: 'go2go-dev-5534c',
     databaseURL: 'https://go2go-dev-5534c-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp(name: name, options: firebaseOptions);
+  late final Future<FirebaseApp> _initialization;// = Firebase.initializeApp(name: name, options: firebaseOptions);
 
 
 
@@ -155,6 +161,22 @@ class _MyAppState extends State<MyApp> {
      });
    }
 
+   Future<String> initializeAll() async {
+     print("Point ${Firebase.apps.length}");
+     if (Firebase.apps.length ==2) {
+       _initialization =
+           Firebase.initializeApp(name: name, options: firebaseOptions);
+     }else{
+       Firebase.app();
+     }
+     print("Point  _initialization = $_initialization");
+     //await handleInitializeEvents();
+     var currentRouteName = await handleInitializeEvents();
+     print("Point currentRouteName $currentRouteName");
+     return currentRouteName;
+   }
+
+
   @override
   Widget build(BuildContext context) {
     constance.locale = locale;
@@ -166,10 +188,13 @@ class _MyAppState extends State<MyApp> {
       systemNavigationBarDividerColor: Colors.grey,
       systemNavigationBarIconBrightness: AppTheme.isLightTheme ? Brightness.dark : Brightness.light,
     ));
+
+
+
     return FutureBuilder(
       /// Initialize FlutterFire:
-      future: _initialization,
-      builder: (context, snapshot) {
+      future: initializeAll(),//_initialization,
+      builder: (context, snapshot){
         /// Check for errors
         if (snapshot.hasError) {
           return new Directionality(
@@ -180,15 +205,14 @@ class _MyAppState extends State<MyApp> {
         /// Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
 
-          var currentRouteName = handleInitializeEvents();
-          print("currentRouteName $currentRouteName");
-
+          print("snapshot ${snapshot.data.toString()}");
+          var currentRouteName = snapshot.data.toString();
           return MaterialApp(
             title: 'Go2Go Driver',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.getTheme(),
             routes: routes,
-            initialRoute: currentRouteName,
+            initialRoute: currentRouteName ,
           );
         }
 
@@ -201,21 +225,42 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  handleInitializeEvents() {
+  handleInitializeEvents() async {
     ///we need to check if the current FirebaseAuth.instance.currentUser
     /// is on the drivers node. if node we have to direct to register
     var currentFirebaseUser = FirebaseAuth.instance.currentUser;
-    var routeName = Routes.LOGIN2;
+    var routeName =  Routes.UITEST; // Routes.LOGIN2;
     print("currentFirebaseUser $currentFirebaseUser");
-
     if (currentFirebaseUser == null) {
       return routeName;
     } else {
       CustomParameters.currentFirebaseUser = currentFirebaseUser!;
-
-      var hasAssociateDriverAccount =  AuthService()
-          .getCheckUidHasDriverAccount(currentFirebaseUser.uid);
-      routeName = Routes.HOME;
+      var valuex = await AuthService().getCheckUidHasDriverAccount(currentFirebaseUser.uid); //.then((value){
+           print("hasAssociateDriverAccount value :- $valuex");
+           if (valuex != null) {
+             ///Get the status
+             var accStatus = valuex["accountStatus"];
+             print("accStatus :- $accStatus");
+             ///Handling the driver status
+             if (accStatus == "NoVehicleDet") {
+               routeName = Routes.VEHICLEINFO;
+             } else if (accStatus == "NoImageDet") {
+               routeName = Routes.DOCUMENTINFO;
+             } else if (accStatus == "Banned") {
+               routeName = Routes.USERBLOCK;
+             } else if (accStatus == "Pending") {
+               routeName = Routes.USERPENDING;
+             } else {
+               routeName = Routes.UITEST;
+               //routeName = Routes.HOME;
+             }
+           } else {
+             ///since this is false login or a login without driver account we log off the user
+             ///and direct to login
+             FirebaseAuth.instance.signOut();
+             routeName = Routes.LOGIN2;
+           }
+      // });
     }
     return routeName;
   }
@@ -236,6 +281,15 @@ class _MyAppState extends State<MyApp> {
     Routes.DOCS: (BuildContext context) => new DocumentInfo(),
     Routes.UITEST: (BuildContext context) => new UiTest(),
     Routes.VOICETRIP: (BuildContext context) => new VoiceTripRequest(),
+    Routes.CUSTOMERS: (BuildContext context) => new MyCustomers(),
+    Routes.ADDCUSTOMERS:(BuildContext context)=> new AddNewCustomer(),
+
+    Routes.DOCUMENTINFO:(BuildContext context)=> new DocumentInfo(),
+    Routes.VEHICLEINFO:(BuildContext context)=> new VehicleInfo(),
+    Routes.USERBLOCK:(BuildContext context)=> new UserStatusBlockScreen(),
+    Routes.USERPENDING:(BuildContext context)=> new UserStatusPendingScreen(),
+    Routes.TRIPBOOKING:(BuildContext context)=> new BookingScreen(),
+
   };
 }
 
@@ -254,6 +308,14 @@ class Routes {
   static const String DOCS = "/auth/documentInfo";
   static const String UITEST = "/e2e/UITest";
   static const String VOICETRIP = "/home/VoiceTripRequest";
+  static const String CUSTOMERS = "/customerManagement/myCustomers";
+  static const String ADDCUSTOMERS = "/customerManagement/addCustomer";
+
+  static const String DOCUMENTINFO = "/auth/documentInfo";
+  static const String VEHICLEINFO = "/auth/vehicleInfo";
+  static const String USERBLOCK = "/auth/userstatusscreen_block";
+  static const String USERPENDING = "/auth/userstatusscreen_pending";
+  static const String TRIPBOOKING = "/notification/tripbooking";
 }
 
 loading(context, testToDisplay){

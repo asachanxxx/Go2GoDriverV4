@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:background_location/background_location.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -32,7 +35,7 @@ import 'package:my_cab_driver/vehicalManagement/addVehicalScreen.dart';
 import 'package:my_cab_driver/vehicalManagement/vehicalmanagementScreen.dart';
 import 'package:my_cab_driver/wallet/myWallet.dart';
 import 'package:my_cab_driver/wallet/paymentMethod.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 import '../main.dart';
 
 class UiTest extends StatefulWidget {
@@ -42,6 +45,9 @@ class UiTest extends StatefulWidget {
 
 class _PhoneVerificationState extends State<UiTest> {
   var appBarheight = 20.0;
+  int _counter = 0;
+  late Location oldPosition2;
+  late double totalDistance = 0.00;
 
   String latitude = 'waiting...';
   String longitude = 'waiting...';
@@ -76,36 +82,8 @@ class _PhoneVerificationState extends State<UiTest> {
               locationData('Time: ' + time),
               ElevatedButton(
                   onPressed: () async {
-                    await BackgroundLocation.setAndroidNotification(
-                      title: 'Background service is running',
-                      message: 'Background location in progress',
-                      icon: '@mipmap/ic_launcher',
-                    );
-                    //await BackgroundLocation.setAndroidConfiguration(1000);
-                    await BackgroundLocation.startLocationService(
-                        distanceFilter: 20);
-                    BackgroundLocation.getLocationUpdates((location) {
-                      setState(() {
-                        latitude = location.latitude.toString();
-                        longitude = location.longitude.toString();
-                        accuracy = location.accuracy.toString();
-                        altitude = location.altitude.toString();
-                        bearing = location.bearing.toString();
-                        speed = location.speed.toString();
-                        time = DateTime.fromMillisecondsSinceEpoch(
-                            location.time!.toInt())
-                            .toString();
-                      });
-                      print('''\n
-                        Latitude:  $latitude
-                        Longitude: $longitude
-                        Altitude: $altitude
-                        Accuracy: $accuracy
-                        Bearing:  $bearing
-                        Speed: $speed
-                        Time: $time
-                      ''');
-                    });
+                    await startLocationUpdate();
+
                   },
                   child: Text('Start Location Service')),
               ElevatedButton(
@@ -118,6 +96,16 @@ class _PhoneVerificationState extends State<UiTest> {
                     getCurrentLocation();
                   },
                   child: Text('Get Current Location')),
+              ElevatedButton(
+                  onPressed: () async {
+                    final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+                    var serviceEnabled = await _geolocatorPlatform.isLocationServiceEnabled();
+                    //Position? position = await Geolocator.getLastKnownPosition();
+                    print("position $serviceEnabled");
+
+
+                  },
+                  child: Text('GetStatic Loc')),
             ],
           ),
         ),
@@ -864,6 +852,99 @@ class _PhoneVerificationState extends State<UiTest> {
   }
 
 
+  Future<void> startLocationUpdate() async {
+    double totalFare = 0.00;
+    double totalTime = 0;
+    double totalWaiting = 0;
+    double totalSpeed = 0;
+    double kmPrice = 45;
+    String accuracy = "0";
+    CustomParameters.currentPosition =
+        Location(longitude: 6.877317676732788, latitude: 79.9899282496178);
+    oldPosition2 = Location(
+        longitude: CustomParameters.currentPosition.longitude,
+        latitude: CustomParameters.currentPosition.latitude);
+    print("New trip Point 4");
+    var permission = await Permission.locationAlways.isGranted;
+    if (!permission) {
+      var permisisonState = await Permission.locationAlways.request();
+      if (permisisonState.isDenied || permisisonState.isPermanentlyDenied) {
+        //showToast(context,"Permission has not granted to use location.");
+        print("New trip Point 5");
+        Navigator.pop(context);
+        //return;
+      }
+    } else {
+      //showToast(context,"Permission has not granted to use location.");
+      //Navigator.pop(context);
+      //return;
+      print("New trip Point 6");
+    }
+    print("New trip Point 7");
+    BackgroundLocation.stopLocationService();
+    BackgroundLocation.setAndroidConfiguration(2000);
+    await BackgroundLocation.setAndroidNotification(
+      title: "Go2Go Background location",
+      message: "Go2Go Background location in progress",
+      icon: "@mipmap/ic_launcher",
+    );
+    print("New trip Point 8");
+    await BackgroundLocation.startLocationService(distanceFilter: 20);
+
+    BackgroundLocation.getLocationUpdates((location) {
+      print("New trip Point 9");
+      try {
+        CustomParameters.currentPosition = location;
+        LatLng pos = LatLng(location.latitude!, location.longitude!);
+        setState(() {
+          accuracy = location.accuracy!.toStringAsFixed(0);
+          totalSpeed = location.speed! as double;
+          var oldPos = oldPosition2 ?? location;
+          totalDistance = totalDistance + calculateDistance(
+              oldPos.latitude, oldPos.longitude, location.latitude,
+              location.longitude);
+          print("distance  $totalDistance");
+        });
+        oldPosition2 = location;
+      }
+      catch (e) {
+        print('Error in updates ${e}');
+      }
+    });
+    print("New trip Point 10");
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 - c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) *
+            (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
+  }
+
+  double CalDistance(Location pos1, Location pos2, DistanceType type) {
+    print("pos1 : ${pos1.latitude} pos2: ${pos2.latitude}");
+    double R = (type == DistanceType.Miles) ? 3960 : 6371;
+    double dLat = toRadian(pos2.latitude! - pos1.latitude!);
+    double dLon = toRadian(pos2.longitude! - pos1.longitude!);
+    double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(toRadian(pos1.latitude!)) * cos(toRadian(pos2.latitude!)) *
+            sin(dLon / 2) * sin(dLon / 2);
+    double c = 2 * asin(min(1, sqrt(a)));
+    double d = R * c;
+    return d;
+  }
+
+  double toRadian(double val) {
+    return (pi / 180) * val;
+  }
+
+
+
+
+
+
   void checkAvailablity(context) {
     DatabaseReference rideRef =
     FirebaseDatabase.instance.reference().child('rideRequest/-MnzFxHE5Rx0DOACowpj');
@@ -910,7 +991,7 @@ class _PhoneVerificationState extends State<UiTest> {
         }
         CustomParameters.currentPosition =
             Location(longitude: 6.877317676732788, latitude: 79.9899282496178);
-        getLocationUpdates();
+        //getLocationUpdates();
         Navigator.pop(context);
         //CommonService.disableHomTabLocationUpdates();
         Navigator.push(

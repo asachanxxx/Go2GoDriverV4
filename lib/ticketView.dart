@@ -51,9 +51,15 @@ class _TicketDesignState extends State<TicketDesign> {
                               children: <Widget>[
                                 Text(
                                   AppLocalizations.of('Esther Berry'),
-                                  style: Theme.of(context).textTheme.headline6!.copyWith(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline6!
+                                      .copyWith(
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
                                 ),
                                 SizedBox(
@@ -67,9 +73,13 @@ class _TicketDesignState extends State<TicketDesign> {
                                       child: Center(
                                         child: Text(
                                           AppLocalizations.of('ApplePay'),
-                                          style: Theme.of(context).textTheme.button!.copyWith(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .button!
+                                              .copyWith(
                                                 fontWeight: FontWeight.bold,
-                                                color: ConstanceData.secoundryFontColor,
+                                                color: ConstanceData
+                                                    .secoundryFontColor,
                                               ),
                                         ),
                                       ),
@@ -89,9 +99,13 @@ class _TicketDesignState extends State<TicketDesign> {
                                       child: Center(
                                         child: Text(
                                           AppLocalizations.of('Discount'),
-                                          style: Theme.of(context).textTheme.button!.copyWith(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .button!
+                                              .copyWith(
                                                 fontWeight: FontWeight.bold,
-                                                color: ConstanceData.secoundryFontColor,
+                                                color: ConstanceData
+                                                    .secoundryFontColor,
                                               ),
                                         ),
                                       ),
@@ -114,14 +128,23 @@ class _TicketDesignState extends State<TicketDesign> {
                               children: <Widget>[
                                 Text(
                                   '\$25.0',
-                                  style: Theme.of(context).textTheme.headline6!.copyWith(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headline6!
+                                      .copyWith(
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
                                 ),
                                 Text(
                                   '2.2 km',
-                                  style: Theme.of(context).textTheme.caption!.copyWith(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .caption!
+                                      .copyWith(
                                         color: Theme.of(context).disabledColor,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -138,7 +161,8 @@ class _TicketDesignState extends State<TicketDesign> {
                       Container(
                         color: Theme.of(context).scaffoldBackgroundColor,
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 14, left: 14, bottom: 8, top: 8),
+                          padding: const EdgeInsets.only(
+                              right: 14, left: 14, bottom: 8, top: 8),
                           child: Row(
                             children: <Widget>[
                               Column(
@@ -146,8 +170,12 @@ class _TicketDesignState extends State<TicketDesign> {
                                 children: <Widget>[
                                   Text(
                                     AppLocalizations.of('PICKUP'),
-                                    style: Theme.of(context).textTheme.caption!.copyWith(
-                                          color: Theme.of(context).disabledColor,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .caption!
+                                        .copyWith(
+                                          color:
+                                              Theme.of(context).disabledColor,
                                           fontWeight: FontWeight.bold,
                                         ),
                                   ),
@@ -156,9 +184,15 @@ class _TicketDesignState extends State<TicketDesign> {
                                   ),
                                   Text(
                                     AppLocalizations.of('79 Swift Village'),
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                 ],
@@ -181,7 +215,8 @@ class _TicketDesignState extends State<TicketDesign> {
                       Container(
                         color: Theme.of(context).scaffoldBackgroundColor,
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 14, left: 14, bottom: 8, top: 8),
+                          padding: const EdgeInsets.only(
+                              right: 14, left: 14, bottom: 8, top: 8),
                           child: Row(
                             children: <Widget>[
                               Column(
@@ -189,8 +224,12 @@ class _TicketDesignState extends State<TicketDesign> {
                                 children: <Widget>[
                                   Text(
                                     AppLocalizations.of('DROP OFF'),
-                                    style: Theme.of(context).textTheme.caption!.copyWith(
-                                          color: Theme.of(context).disabledColor,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .caption!
+                                        .copyWith(
+                                          color:
+                                              Theme.of(context).disabledColor,
                                           fontWeight: FontWeight.bold,
                                         ),
                                   ),
@@ -198,10 +237,17 @@ class _TicketDesignState extends State<TicketDesign> {
                                     height: 4,
                                   ),
                                   Text(
-                                    AppLocalizations.of('115 William St, Chicago, US'),
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    AppLocalizations.of(
+                                        '115 William St, Chicago, US'),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                 ],
@@ -218,13 +264,17 @@ class _TicketDesignState extends State<TicketDesign> {
                       Container(
                         color: Theme.of(context).scaffoldBackgroundColor,
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 24, left: 30, bottom: 8, top: 8),
+                          padding: const EdgeInsets.only(
+                              right: 24, left: 30, bottom: 8, top: 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
                                 AppLocalizations.of('NOTED'),
-                                style: Theme.of(context).textTheme.caption!.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption!
+                                    .copyWith(
                                       color: Theme.of(context).disabledColor,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -237,9 +287,15 @@ class _TicketDesignState extends State<TicketDesign> {
                                   Text(
                                     AppLocalizations.of(
                                         'Lorem ipsum dolor sit amet, consectetur adipisc elit. Nullam ac vestibulum erat. Cras vulputate auctor lectus at consequat.'),
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                 ],
@@ -266,13 +322,17 @@ class _TicketDesignState extends State<TicketDesign> {
                       Container(
                         color: Theme.of(context).scaffoldBackgroundColor,
                         child: Padding(
-                          padding: const EdgeInsets.only(right: 14, left: 14, bottom: 8, top: 8),
+                          padding: const EdgeInsets.only(
+                              right: 14, left: 14, bottom: 8, top: 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
                                 AppLocalizations.of('TRIP FARE'),
-                                style: Theme.of(context).textTheme.caption!.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption!
+                                    .copyWith(
                                       color: Theme.of(context).disabledColor,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -281,20 +341,33 @@ class _TicketDesignState extends State<TicketDesign> {
                                 height: 8,
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   Text(
                                     AppLocalizations.of('ApplePay'),
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                   Text(
                                     '\$15.00',
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                 ],
@@ -303,20 +376,33 @@ class _TicketDesignState extends State<TicketDesign> {
                                 height: 8,
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   Text(
                                     AppLocalizations.of('Discount'),
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                   Text(
                                     '\$10.00',
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                 ],
@@ -325,20 +411,33 @@ class _TicketDesignState extends State<TicketDesign> {
                                 height: 8,
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   Text(
                                     AppLocalizations.of('Paid amount'),
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                   Text(
                                     '\$25.00',
-                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .subtitle2!
+                                        .copyWith(
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.headline6!.color,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
                                         ),
                                   ),
                                 ],
@@ -348,7 +447,8 @@ class _TicketDesignState extends State<TicketDesign> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 14, left: 14, top: 8),
+                        padding:
+                            const EdgeInsets.only(right: 14, left: 14, top: 8),
                         child: InkWell(
                           highlightColor: Colors.transparent,
                           splashColor: Colors.transparent,
@@ -359,14 +459,19 @@ class _TicketDesignState extends State<TicketDesign> {
                             height: 40,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
-                              color: Theme.of(context).textTheme.headline6!.color,
+                              color:
+                                  Theme.of(context).textTheme.headline6!.color,
                             ),
                             child: Center(
                               child: Text(
                                 AppLocalizations.of('CANCEL'),
-                                style: Theme.of(context).textTheme.button!.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .button!
+                                    .copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).scaffoldBackgroundColor,
+                                      color: Theme.of(context)
+                                          .scaffoldBackgroundColor,
                                     ),
                               ),
                             ),
@@ -374,7 +479,8 @@ class _TicketDesignState extends State<TicketDesign> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(right: 14, left: 14, top: 8, bottom: 14),
+                        padding: const EdgeInsets.only(
+                            right: 14, left: 14, top: 8, bottom: 14),
                         child: InkWell(
                           highlightColor: Colors.transparent,
                           splashColor: Colors.transparent,
@@ -390,7 +496,10 @@ class _TicketDesignState extends State<TicketDesign> {
                             child: Center(
                               child: Text(
                                 AppLocalizations.of('GO TO PICK UP'),
-                                style: Theme.of(context).textTheme.button!.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .button!
+                                    .copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: ConstanceData.secoundryFontColor,
                                     ),
@@ -413,7 +522,8 @@ class _TicketDesignState extends State<TicketDesign> {
     );
   }
 
-  Widget ticketDetailsWidget(String firstTitle, String firstDesc, String secondTitle, String secondDesc) {
+  Widget ticketDetailsWidget(String firstTitle, String firstDesc,
+      String secondTitle, String secondDesc) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
@@ -473,7 +583,10 @@ class FlutterTicketWidget extends StatefulWidget {
   final Color color;
   final bool isCornerRounded;
 
-  FlutterTicketWidget({required this.child, this.color = Colors.white, this.isCornerRounded = false});
+  FlutterTicketWidget(
+      {required this.child,
+      this.color = Colors.white,
+      this.isCornerRounded = false});
 
   @override
   _FlutterTicketWidgetState createState() => _FlutterTicketWidgetState();
@@ -487,7 +600,11 @@ class _FlutterTicketWidgetState extends State<FlutterTicketWidget> {
       child: AnimatedContainer(
         duration: Duration(seconds: 1),
         child: widget.child,
-        decoration: BoxDecoration(color: widget.color, borderRadius: widget.isCornerRounded ? BorderRadius.circular(10) : BorderRadius.circular(0.0)),
+        decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: widget.isCornerRounded
+                ? BorderRadius.circular(10)
+                : BorderRadius.circular(0.0)),
       ),
     );
   }
@@ -502,8 +619,10 @@ class TicketClipper extends CustomClipper<Path> {
     path.lineTo(size.width, size.height);
     path.lineTo(size.width, 0.0);
 
-    path.addOval(Rect.fromCircle(center: Offset(0.0, size.height / 2), radius: 20.0));
-    path.addOval(Rect.fromCircle(center: Offset(size.width, size.height / 2), radius: 20.0));
+    path.addOval(
+        Rect.fromCircle(center: Offset(0.0, size.height / 2), radius: 20.0));
+    path.addOval(Rect.fromCircle(
+        center: Offset(size.width, size.height / 2), radius: 20.0));
 
     return path;
   }

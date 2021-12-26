@@ -41,11 +41,13 @@ class PickupScreen extends StatefulWidget {
   final TripDetails tripDetails;
   final bool restartRide;
   final int incomeType;
-  PickupScreen({required this.tripDetails, required this.restartRide, required this.incomeType});
+  PickupScreen(
+      {required this.tripDetails,
+      required this.restartRide,
+      required this.incomeType});
   @override
   _PickupScreenState createState() => _PickupScreenState();
 }
-
 
 class _PickupScreenState extends State<PickupScreen> {
   late Future<bool> _future;
@@ -71,13 +73,11 @@ class _PickupScreenState extends State<PickupScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   late BitmapDescriptor movingMarkerIcon;
 
-
   var geoLocator = Geolocator();
   var locationOptions = LocationOptions(
       accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 1,
       timeInterval: 1);
-
 
   late Position myPosition;
   String status = 'init';
@@ -96,14 +96,13 @@ class _PickupScreenState extends State<PickupScreen> {
   var oldPositionLatlng;
   var oldTime;
 
-
   double totalFare = 0.00;
   double totalTime = 0;
   double totalWaiting = 0;
   double totalDistance = 0.00;
   double totalSpeed = 0;
   double kmPrice = 45;
-  String infoPanel =  "Meter Ready..";
+  String infoPanel = "Meter Ready..";
   String accuracy = "0";
   late Location oldPosition2;
   bool startSwitch = true;
@@ -111,7 +110,6 @@ class _PickupScreenState extends State<PickupScreen> {
   bool isStopTimer = false;
   String startButtonText = "START";
   String waitButtonText = "WAIT";
-
 
   String getTimeString(DateTime dateTime) {
     return dateTime.hour.toString() +
@@ -141,7 +139,8 @@ class _PickupScreenState extends State<PickupScreen> {
         .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile');
 
     driverRef.once().then((DataSnapshot snapshot) {
-      print("HomeTab- getCurrentDriverInfo isOnlineStatus =   ${snapshot.value["onlineStatus"]}");
+      print(
+          "HomeTab- getCurrentDriverInfo isOnlineStatus =   ${snapshot.value["onlineStatus"]}");
 
       if (snapshot.value != null) {
         CustomParameters.currentDriverInfo = Driver.fromSnapshot(snapshot);
@@ -158,8 +157,11 @@ class _PickupScreenState extends State<PickupScreen> {
         }
 
         if (snapshot.value["inMiddleOfTrip"] != null) {
-          print("inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}");
-          inMiddleOfTrip =  snapshot.value["inMiddleOfTrip"].toString().toLowerCase() =='true';
+          print(
+              "inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}");
+          inMiddleOfTrip =
+              snapshot.value["inMiddleOfTrip"].toString().toLowerCase() ==
+                  'true';
         }
         if (snapshot.value["rideId"] != null) {
           print("existingRideId  ${snapshot.value["rideId"].toString()}");
@@ -175,35 +177,34 @@ class _PickupScreenState extends State<PickupScreen> {
     DataSnapshot vehicleRef = await FirebaseDatabase.instance
         .reference()
         .child(
-        'drivers/${CustomParameters.currentFirebaseUser.uid}/vehicle_details')
+            'drivers/${CustomParameters.currentFirebaseUser.uid}/vehicle_details')
         .once();
 
-    CustomParameters.currentVehicleInfomation = VehicleInfomation.fromShapShot(vehicleRef);
-    print("Vehicle type VtypeConverter :- ${CustomParameters.VtypeConverter(CustomParameters.currentVehicleInfomation.vehicleType)}");
+    CustomParameters.currentVehicleInfomation =
+        VehicleInfomation.fromShapShot(vehicleRef);
+    print(
+        "Vehicle type VtypeConverter :- ${CustomParameters.VtypeConverter(CustomParameters.currentVehicleInfomation.vehicleType)}");
 
-    var latlng = LatLng(currentPositionx.latitude!, currentPositionx.longitude!);
+    var latlng =
+        LatLng(currentPositionx.latitude!, currentPositionx.longitude!);
     PushNotificationService pushNotificationService = PushNotificationService();
     pushNotificationService.initialize(context, latlng);
   }
 
   Future<bool> initializeAll() async {
     print("New trip Point 1");
+
     ///Create movingMarkerIcon
     movingMarkerIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(size: Size(48, 48)),
-        (Platform.isIOS)
-            ? 'images/car_ios.png'
-            : 'images/car_android.png');
+        (Platform.isIOS) ? 'images/car_ios.png' : 'images/car_android.png');
 
     print("New trip Point 2");
     //Create startLocationUpdate
-    await startLocationUpdate();
+
     await acceptTrip();
     return Future.value(true);
-
-    return true;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -214,11 +215,12 @@ class _PickupScreenState extends State<PickupScreen> {
       onWillPop: () async {
         showDialog(
             context: context,
-            builder: (context) =>
-                AlertDialog(title: Text(
-                  'You cannot go back from this screen. please close the app if you want to exit(ඔබට මෙම මෙනුවෙන් ඉවතට යා නොහැක. එසේ කිරීමට Go2Go යෙදුම මෙනුවෙන් වසා දමන්න )',
-                  style: GoogleFonts.roboto(
-                      fontSize: 15, color: Color(0xFFd32f2f)),),
+            builder: (context) => AlertDialog(
+                    title: Text(
+                      'You cannot go back from this screen. please close the app if you want to exit(ඔබට මෙම මෙනුවෙන් ඉවතට යා නොහැක. එසේ කිරීමට Go2Go යෙදුම මෙනුවෙන් වසා දමන්න )',
+                      style: GoogleFonts.roboto(
+                          fontSize: 15, color: Color(0xFFd32f2f)),
+                    ),
                     actions: <Widget>[
                       ElevatedButton(
                           child: const Text('OK'),
@@ -231,8 +233,7 @@ class _PickupScreenState extends State<PickupScreen> {
           color: Theme.of(context).scaffoldBackgroundColor,
           child: FutureBuilder<bool>(
             future: _future, // a Future<String> or null
-            builder: (BuildContext context,
-                AsyncSnapshot<bool> snapshot) {
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
                   return loadingIndicators('Waiting for connection....');
@@ -242,8 +243,7 @@ class _PickupScreenState extends State<PickupScreen> {
                   if (snapshot.hasError) {
                     print('Error: ${snapshot.error}');
                     return loadingIndicators('Error: ${snapshot.error}');
-                  }
-                  else {
+                  } else {
                     return SafeArea(
                       child: Scaffold(
                         key: _scaffoldKey,
@@ -262,14 +262,18 @@ class _PickupScreenState extends State<PickupScreen> {
                               markers: _markers,
                               polylines: _polyLines,
 
-                              initialCameraPosition: CustomParameters.googlePlex,
-                              onMapCreated: (GoogleMapController controller)  async {
+                              initialCameraPosition:
+                                  CustomParameters.googlePlex,
+                              onMapCreated:
+                                  (GoogleMapController controller) async {
                                 _controller.complete(controller);
                                 mapController = controller;
                                 setLDMapStyle();
 
-                                var currentLatLng =
-                                LatLng(CustomParameters.currentPosition.latitude!, CustomParameters.currentPosition.longitude!);
+                                var currentLatLng = LatLng(
+                                    CustomParameters.currentPosition.latitude!,
+                                    CustomParameters
+                                        .currentPosition.longitude!);
                                 var pickupLatLng = widget.tripDetails.pickup;
                                 await getDirection(currentLatLng, pickupLatLng);
                                 print("End Loading map");
@@ -278,7 +282,6 @@ class _PickupScreenState extends State<PickupScreen> {
                               // polylines: Set<Polyline>.of(
                               //     getPolyLine(context).values),
                             ),
-
                             Column(
                               children: <Widget>[
                                 offLineMode(),
@@ -291,17 +294,12 @@ class _PickupScreenState extends State<PickupScreen> {
                                 ),
                                 offLineModeDetail(),
                                 Container(
-                                  height: MediaQuery
-                                      .of(context)
-                                      .padding
-                                      .bottom,
-                                  color: Theme
-                                      .of(context)
-                                      .scaffoldBackgroundColor,
+                                  height: MediaQuery.of(context).padding.bottom,
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                 )
                               ],
                             )
-
                           ],
                         ),
                       ),
@@ -309,11 +307,9 @@ class _PickupScreenState extends State<PickupScreen> {
                   }
               }
             },
-          )
-      ),
+          )),
     );
   }
-
 
   Widget offLineMode() {
     return Animator<double>(
@@ -335,8 +331,7 @@ class _PickupScreenState extends State<PickupScreen> {
                   strokeWidth: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(4),
-                    child:
-                    CircleAvatar(
+                    child: CircleAvatar(
                       radius: 16,
                       backgroundImage: AssetImage(
                         ConstanceData.userImage,
@@ -354,15 +349,16 @@ class _PickupScreenState extends State<PickupScreen> {
                     Text(
                       AppLocalizations.of(widget.tripDetails.riderName),
                       style: Theme.of(context).textTheme.headline6!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: ConstanceData.secoundryFontColor,
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: ConstanceData.secoundryFontColor,
+                          ),
                     ),
                     Text(
-                      AppLocalizations.of('${widget.tripDetails.riderPhone} - GOLD Customer'),
+                      AppLocalizations.of(
+                          '${widget.tripDetails.riderPhone} - GOLD Customer'),
                       style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                        color: ConstanceData.secoundryFontColor,
-                      ),
+                            color: ConstanceData.secoundryFontColor,
+                          ),
                     ),
                   ],
                 )
@@ -439,8 +435,6 @@ class _PickupScreenState extends State<PickupScreen> {
             SizedBox(
               height: 8,
             ),
-
-
             Row(
               children: <Widget>[
                 Row(
@@ -488,7 +482,6 @@ class _PickupScreenState extends State<PickupScreen> {
                     ),
                   ],
                 ),
-
               ],
             ),
             SizedBox(
@@ -501,7 +494,8 @@ class _PickupScreenState extends State<PickupScreen> {
                 color: Theme.of(context).primaryColor,
               ),
               child: Padding(
-                padding: const EdgeInsets.only(left: 14 , top: 5 , right: 14 , bottom: 5),
+                padding: const EdgeInsets.only(
+                    left: 14, top: 5, right: 14, bottom: 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
@@ -509,22 +503,25 @@ class _PickupScreenState extends State<PickupScreen> {
                       children: <Widget>[
                         Text(
                           '$totalDistance',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                            color: ConstanceData.secoundryFontColor,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.subtitle1!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 32,
+                                    color: ConstanceData.secoundryFontColor,
+                                  ),
                         ),
                         Row(
                           children: <Widget>[
                             Text(
                               //earning
                               AppLocalizations.of('KM'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                              ),
+                              style:
+                                  Theme.of(context).textTheme.caption!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
                             ),
                           ],
                         ),
@@ -534,21 +531,24 @@ class _PickupScreenState extends State<PickupScreen> {
                       children: <Widget>[
                         Text(
                           '$totalSpeed',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                            color: ConstanceData.secoundryFontColor,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.subtitle1!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 32,
+                                    color: ConstanceData.secoundryFontColor,
+                                  ),
                         ),
                         Row(
                           children: <Widget>[
                             Text(
                               AppLocalizations.of('KM/H'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                              ),
+                              style:
+                                  Theme.of(context).textTheme.caption!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
                             ),
                           ],
                         ),
@@ -558,21 +558,24 @@ class _PickupScreenState extends State<PickupScreen> {
                       children: <Widget>[
                         Text(
                           '${Duration(seconds: durationCounter).inMinutes}',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 32,
-                            color: ConstanceData.secoundryFontColor,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.subtitle1!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 32,
+                                    color: ConstanceData.secoundryFontColor,
+                                  ),
                         ),
                         Row(
                           children: <Widget>[
                             Text(
                               AppLocalizations.of('MINUTES'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: Theme.of(context).scaffoldBackgroundColor,
-                              ),
+                              style:
+                                  Theme.of(context).textTheme.caption!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
                             ),
                           ],
                         ),
@@ -582,7 +585,6 @@ class _PickupScreenState extends State<PickupScreen> {
                 ),
               ),
             ),
-
             SizedBox(
               height: 8,
             ),
@@ -593,7 +595,8 @@ class _PickupScreenState extends State<PickupScreen> {
                 color: Theme.of(context).backgroundColor,
               ),
               child: Padding(
-                padding: const EdgeInsets.only(left: 2 , top: 7 , right: 2 , bottom: 5),
+                padding:
+                    const EdgeInsets.only(left: 2, top: 7, right: 2, bottom: 5),
                 child: Row(
                   children: <Widget>[
                     Expanded(
@@ -609,12 +612,11 @@ class _PickupScreenState extends State<PickupScreen> {
                               width: 40,
                               decoration: BoxDecoration(
                                 borderRadius:
-                                BorderRadius.all(Radius.circular((25))),
+                                    BorderRadius.all(Radius.circular((25))),
                                 border: Border.all(
                                     width: 2.0, color: Colors.redAccent),
                               ),
-                              child: Icon(Icons.call,
-                                  color: Colors.redAccent),
+                              child: Icon(Icons.call, color: Colors.redAccent),
                             ),
                             Text(
                               "Call",
@@ -633,13 +635,14 @@ class _PickupScreenState extends State<PickupScreen> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          if(status == 'init'){
-                            var driverLocation = LatLng(CustomParameters.currentPosition.latitude!,
+                          if (status == 'init') {
+                            var driverLocation = LatLng(
+                                CustomParameters.currentPosition.latitude!,
                                 CustomParameters.currentPosition.longitude!);
                             _launchMapsUrl(
                                 driverLocation, widget.tripDetails.pickup);
                           }
-                          if(status == 'arrived' || status == 'ontrip'){
+                          if (status == 'arrived' || status == 'ontrip') {
                             _launchMapsUrl(widget.tripDetails.pickup,
                                 widget.tripDetails.destination);
                           }
@@ -652,9 +655,10 @@ class _PickupScreenState extends State<PickupScreen> {
                               width: 40,
                               decoration: BoxDecoration(
                                 borderRadius:
-                                BorderRadius.all(Radius.circular((25))),
+                                    BorderRadius.all(Radius.circular((25))),
                                 border: Border.all(
-                                    width: 2.0, color: Theme.of(context).primaryColor),
+                                    width: 2.0,
+                                    color: Theme.of(context).primaryColor),
                               ),
                               child: Icon(Icons.navigation_outlined,
                                   color: Theme.of(context).primaryColor),
@@ -686,9 +690,10 @@ class _PickupScreenState extends State<PickupScreen> {
                               width: 40,
                               decoration: BoxDecoration(
                                 borderRadius:
-                                BorderRadius.all(Radius.circular((25))),
+                                    BorderRadius.all(Radius.circular((25))),
                                 border: Border.all(
-                                    width: 2.0, color: Theme.of(context).primaryColor),
+                                    width: 2.0,
+                                    color: Theme.of(context).primaryColor),
                               ),
                               child: Icon(Icons.play_arrow,
                                   color: Theme.of(context).primaryColor),
@@ -720,9 +725,10 @@ class _PickupScreenState extends State<PickupScreen> {
                               width: 40,
                               decoration: BoxDecoration(
                                 borderRadius:
-                                BorderRadius.all(Radius.circular((25))),
+                                    BorderRadius.all(Radius.circular((25))),
                                 border: Border.all(
-                                    width: 2.0, color: Theme.of(context).primaryColor),
+                                    width: 2.0,
+                                    color: Theme.of(context).primaryColor),
                               ),
                               child: Icon(Icons.report_gmailerrorred_outlined,
                                   color: Theme.of(context).primaryColor),
@@ -761,10 +767,10 @@ class _PickupScreenState extends State<PickupScreen> {
                   child: Text(
                     AppLocalizations.of(buttonTitle),
                     style: Theme.of(context).textTheme.button!.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                    ),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                        ),
                   ),
                 ),
               ),
@@ -772,26 +778,24 @@ class _PickupScreenState extends State<PickupScreen> {
             SizedBox(
               height: 5,
             ),
-
-
           ],
         ),
       ),
     );
   }
 
-
   void setLDMapStyle() async {
     // ignore: unnecessary_null_comparison
     if (mapController != null) {
       if (AppTheme.isLightTheme) {
-        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/lightmapstyle.json"));
+        mapController.setMapStyle(await DefaultAssetBundle.of(context)
+            .loadString("jsonFile/lightmapstyle.json"));
       } else {
-        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/darkmapstyle.json"));
+        mapController.setMapStyle(await DefaultAssetBundle.of(context)
+            .loadString("jsonFile/darkmapstyle.json"));
       }
     }
   }
-
 
   @override
   void deactivate() {
@@ -822,8 +826,7 @@ class _PickupScreenState extends State<PickupScreen> {
       desc: message,
       style: AlertStyle(
           descStyle: TextStyle(fontSize: 15),
-          titleStyle: TextStyle(color: Color(0xFFEB1465))
-      ),
+          titleStyle: TextStyle(color: Color(0xFFEB1465))),
       buttons: [
         DialogButton(
           child: Text(
@@ -841,49 +844,45 @@ class _PickupScreenState extends State<PickupScreen> {
   Widget loadingIndicators(String message) {
     return Scaffold(
         body: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              new BoxShadow(
-                color: AppTheme.isLightTheme ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.2),
-                blurRadius: 12,
-              ),
-            ],
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          new BoxShadow(
+            color: AppTheme.isLightTheme
+                ? Colors.black.withOpacity(0.2)
+                : Colors.white.withOpacity(0.2),
+            blurRadius: 12,
           ),
-
-          child: Column(
-            // Vertically center the widget inside the column
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons.cloud_download_outlined,
-                color: Theme.of(context).primaryColor,
-                size: 100,
-              ),
-              Text(AppLocalizations.of(message),
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle2!
-                    .copyWith(
+        ],
+      ),
+      child: Column(
+        // Vertically center the widget inside the column
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            Icons.cloud_download_outlined,
+            color: Theme.of(context).primaryColor,
+            size: 100,
+          ),
+          Text(
+            AppLocalizations.of(message),
+            style: Theme.of(context).textTheme.subtitle2!.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Theme
-                      .of(context)
-                      .primaryColor,
+                  color: Theme.of(context).primaryColor,
                 ),
-              )
-
-            ],
-          ),
-        ));
+          )
+        ],
+      ),
+    ));
   }
 
   Future seticonimage3(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation3 == null) {
-    final ImageConfiguration imagesStartConfiguration3 = createLocalImageConfiguration(context);
+    final ImageConfiguration imagesStartConfiguration3 =
+        createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation3 = await BitmapDescriptor.fromAssetImage(
       imagesStartConfiguration3,
       ConstanceData.mylocation3,
@@ -895,7 +894,8 @@ class _PickupScreenState extends State<PickupScreen> {
   Future seticonimage2(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation2 == null) {
-    final ImageConfiguration imagesStartConfiguration2 = createLocalImageConfiguration(context);
+    final ImageConfiguration imagesStartConfiguration2 =
+        createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation2 = await BitmapDescriptor.fromAssetImage(
       imagesStartConfiguration2,
       ConstanceData.mylocation2,
@@ -907,7 +907,8 @@ class _PickupScreenState extends State<PickupScreen> {
   Future seticonimage(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation == null) {
-    final ImageConfiguration imagesStartConfiguration = createLocalImageConfiguration(context);
+    final ImageConfiguration imagesStartConfiguration =
+        createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation = await BitmapDescriptor.fromAssetImage(
       imagesStartConfiguration,
       ConstanceData.mylocation1,
@@ -916,26 +917,28 @@ class _PickupScreenState extends State<PickupScreen> {
     // }
   }
 
-  Future<void> startLocationUpdate() async{
+  Future<void> startLocationUpdate() async {
     // FirebaseService.logtoGPSData('=================================================================================================');
     // FirebaseService.logtoGPSData('=================================== GPS based Distance tracking is on ===========================');
     // FirebaseService.logtoGPSData('=================================================================================================');
     print("New trip Point 3");
-    oldPosition2 = Location(longitude: CustomParameters.currentPosition.longitude, latitude: CustomParameters.currentPosition.latitude);
+    oldPosition2 = Location(
+        longitude: CustomParameters.currentPosition.longitude,
+        latitude: CustomParameters.currentPosition.latitude);
     isWaited = false;
     waitButtonText = "WAIT";
 
     print("New trip Point 4");
     var permission = await Permission.locationAlways.isGranted;
-    if(!permission){
+    if (!permission) {
       var permisisonState = await Permission.locationAlways.request();
-      if(permisisonState.isDenied || permisisonState.isPermanentlyDenied){
+      if (permisisonState.isDenied || permisisonState.isPermanentlyDenied) {
         //showToast(context,"Permission has not granted to use location.");
         print("New trip Point 5");
         Navigator.pop(context);
         //return;
       }
-    }else{
+    } else {
       //showToast(context,"Permission has not granted to use location.");
       //Navigator.pop(context);
       //return;
@@ -953,45 +956,52 @@ class _PickupScreenState extends State<PickupScreen> {
     await BackgroundLocation.startLocationService(distanceFilter: 20);
 
     BackgroundLocation.getLocationUpdates((location) {
+      print('Error in updates');
       try {
         CustomParameters.currentPosition = location;
         LatLng pos = LatLng(location.latitude!, location.longitude!);
-        var rotation = MapKitHelperService.getMarkerRotation(oldPosition2.latitude,
-            oldPosition2.longitude, pos.latitude, pos.longitude);
+        var rotation = MapKitHelperService.getMarkerRotation(
+            oldPosition2.latitude,
+            oldPosition2.longitude,
+            pos.latitude,
+            pos.longitude);
         setState(() {
           this.accuracy = location.accuracy!.toStringAsFixed(0);
           infoPanel = "On Trip";
           totalSpeed = location.speed!;
           var oldPos = oldPosition2 != null ? oldPosition2 : location;
-          totalDistance = totalDistance + calculateDistance(oldPos.latitude,oldPos.longitude, location.latitude,location.longitude );
+          totalDistance = totalDistance +
+              calculateDistance(oldPos.latitude, oldPos.longitude,
+                  location.latitude, location.longitude);
           print("distance  $totalDistance");
         });
         oldPosition2 = location;
-      }
-      catch(e){
+      } catch (e) {
         print('Error in updates ${e}');
       }
     });
     print("New trip Point 9");
   }
 
-  double calculateDistance(lat1, lon1, lat2, lon2){
+  double calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;
-    var a = 0.5 - c((lat2 - lat1) * p)/2 +
-        c(lat1 * p) * c(lat2 * p) *
-            (1 - c((lon2 - lon1) * p))/2;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
 
-  double CalDistance(Location pos1, Location pos2, DistanceType type){
+  double CalDistance(Location pos1, Location pos2, DistanceType type) {
     print("pos1 : ${pos1.latitude} pos2: ${pos2.latitude}");
     double R = (type == DistanceType.Miles) ? 3960 : 6371;
     double dLat = this.toRadian(pos2.latitude! - pos1.latitude!);
     double dLon = this.toRadian(pos2.longitude! - pos1.longitude!);
     double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(this.toRadian(pos1.latitude!)) * cos(this.toRadian(pos2.latitude!)) *
-            sin(dLon / 2) * sin(dLon / 2);
+        cos(this.toRadian(pos1.latitude!)) *
+            cos(this.toRadian(pos2.latitude!)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
     double c = 2 * asin(min(1, sqrt(a)));
     double d = R * c;
     return d;
@@ -1001,14 +1011,13 @@ class _PickupScreenState extends State<PickupScreen> {
     return (pi / 180) * val;
   }
 
-  void resetTelemetryValues(){
+  void resetTelemetryValues() {
     setState(() {
       totalSpeed = 0.00;
       totalDistance = 0.00;
       totalTime = 0;
       durationCounter = 0;
     });
-
   }
 
   void updateTripDetails(Location location) async {
@@ -1053,28 +1062,35 @@ class _PickupScreenState extends State<PickupScreen> {
     }
   }
 
-
   Future<void> acceptTrip() async {
     print("New trip Point acceptTrip 1");
-    print("Inside acceptTrip status = $status" );
-    CustomParameters.paymentDetails = PaymentDetails(pickupAddress: "",
+    print("Inside acceptTrip status = $status");
+    CustomParameters.paymentDetails = PaymentDetails(
+        pickupAddress: "",
         destinationAddress: "",
         rideID: "",
         kmPrice: 0.00,
         appPrice: 0.00,
-        timePrice: 0.00, totalFare: totalFare, companyPayable: 0.00, commissionApplicable: false, commission: 0.00);
+        timePrice: 0.00,
+        totalFare: totalFare,
+        companyPayable: 0.00,
+        commissionApplicable: false,
+        commission: 0.00);
     if (widget.tripDetails != null) {
       if (CustomParameters.currentDriverInfo != null) {
-        if(widget.tripDetails.rideID != null) {
+        if (widget.tripDetails.rideID != null) {
           print("RideId is ok and trip details not null");
 
           String rideID = widget.tripDetails.rideID;
-          CustomParameters.rideRef =
-              FirebaseDatabase.instance.reference().child(
-                  'rideRequest/$rideID');
+          CustomParameters.rideRef = FirebaseDatabase.instance
+              .reference()
+              .child('rideRequest/$rideID');
 
           ///Setting variables that not setted when ride request created
-          CustomParameters.rideRef.child('driver_phone').set(CustomParameters.currentDriverInfo.phone);
+          CustomParameters.rideRef
+              .child('driver_phone')
+              .set(CustomParameters.currentDriverInfo.phone);
+
           ///Drivers location may change now so we update drivers current to riderequest obejct
           Map locationMap = {
             'latitude': CustomParameters.currentPosition.latitude.toString(),
@@ -1095,16 +1111,15 @@ class _PickupScreenState extends State<PickupScreen> {
                   "LatLng pos.longitude ${CustomParameters.currentPosition.longitude}");
               print(
                   "LatLng pos.latitude ${CustomParameters.currentPosition.latitude}");
-              var driverLocation = LatLng(CustomParameters.currentPosition.latitude!,
+              var driverLocation = LatLng(
+                  CustomParameters.currentPosition.latitude!,
                   CustomParameters.currentPosition.longitude!);
-              _launchMapsUrl(
-                  driverLocation, widget.tripDetails.pickup);
-            }
-            else if (status == 'arrived') {
+              _launchMapsUrl(driverLocation, widget.tripDetails.pickup);
+            } else if (status == 'arrived') {
               print("status == 'arrived' condition");
 
-              _launchMapsUrl(widget.tripDetails.pickup,
-                  widget.tripDetails.destination);
+              _launchMapsUrl(
+                  widget.tripDetails.pickup, widget.tripDetails.destination);
 
               status = 'arrived';
               TimeSpent = "0.00";
@@ -1118,18 +1133,18 @@ class _PickupScreenState extends State<PickupScreen> {
                 buttonColor = Colors.red;
               });
 
-              if(widget.tripDetails.bookingID != "NA"){
-                DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+              if (widget.tripDetails.bookingID != "NA") {
+                DatabaseReference instanceBase = FirebaseDatabase.instance
+                    .reference()
                     .child('rideBookings/${widget.tripDetails.bookingID}/');
                 instanceBase.child("status").set("Arrived");
               }
               //To count how many minutes spend on a trip
               startTimer();
-            }
-            else if (status == 'ontrip') {
+            } else if (status == 'ontrip') {
               print("status == 'ontrip' condition");
-              _launchMapsUrl(widget.tripDetails.pickup,
-                  widget.tripDetails.destination);
+              _launchMapsUrl(
+                  widget.tripDetails.pickup, widget.tripDetails.destination);
 
               status = 'ontrip';
               TimeSpent = "0.00";
@@ -1142,8 +1157,9 @@ class _PickupScreenState extends State<PickupScreen> {
                 buttonColor = Colors.red;
               });
 
-              if(widget.tripDetails.bookingID != "NA"){
-                DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+              if (widget.tripDetails.bookingID != "NA") {
+                DatabaseReference instanceBase = FirebaseDatabase.instance
+                    .reference()
                     .child('rideBookings/${widget.tripDetails.bookingID}/');
                 instanceBase.child("status").set("OnTrip");
               }
@@ -1152,7 +1168,7 @@ class _PickupScreenState extends State<PickupScreen> {
             }
           }
           print("New trip Point acceptTrip End");
-        }else{
+        } else {
           print("ERR_DR_005");
           print("acceptTrip-> widget.tripDetails.rideID is null");
         }
@@ -1164,8 +1180,6 @@ class _PickupScreenState extends State<PickupScreen> {
       print("ERR_DR_001");
       print("acceptTrip-> widget.tripDetails is null");
     }
-
-
   }
 
   void startTimer() {
@@ -1178,7 +1192,6 @@ class _PickupScreenState extends State<PickupScreen> {
     });
   }
 
-
   void _launchMapsUrl(LatLng _originLatLng, LatLng _destinationLatLng) async {
     final url =
         'https://www.google.com/maps/dir/?api=1&origin=${_originLatLng.latitude},${_originLatLng.longitude}&destination=${_destinationLatLng.latitude},${_destinationLatLng.longitude}&travelmode=driving';
@@ -1190,8 +1203,9 @@ class _PickupScreenState extends State<PickupScreen> {
     }
   }
 
-  void stopLocationUpdates(){
-    print('=================================== END Of GPS based Distance tracking===========================');
+  void stopLocationUpdates() {
+    print(
+        '=================================== END Of GPS based Distance tracking===========================');
 
     isWaited = false;
     waitButtonText = "WAIT";
@@ -1202,7 +1216,6 @@ class _PickupScreenState extends State<PickupScreen> {
       totalSpeed = 0;
       totalFare = 0.00;
       totalWaiting = 0;
-
     });
   }
 
@@ -1215,28 +1228,33 @@ class _PickupScreenState extends State<PickupScreen> {
     if (widget.tripDetails != null) {
       CommonService.showProgressDialog(context);
 
-      myPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      myPosition = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.best);
 
       var currentLatLng = LatLng(myPosition.latitude, myPosition.longitude);
       var directionDetails = await CommonService.getDirectionDetails(
           widget.tripDetails.pickup, currentLatLng);
       Navigator.pop(context);
 
-      var timeInMinutes = durationCounter/60;
+      var timeInMinutes = durationCounter / 60;
 
       DirectionDetails directionDetailsGPS = new DirectionDetails(
-          distanceValue: totalDistance!= null? totalDistance.toInt(): 0,
-          distanceText: totalDistance!=null? totalDistance.toInt().toString() :"0",
-          durationValue:timeInMinutes!=null? timeInMinutes.toInt(): 0,
-          durationText: timeInMinutes!=null? timeInMinutes.toInt().toString(): "0",encodedPoints: ""
-      );
+          distanceValue: totalDistance != null ? totalDistance.toInt() : 0,
+          distanceText:
+              totalDistance != null ? totalDistance.toInt().toString() : "0",
+          durationValue: timeInMinutes != null ? timeInMinutes.toInt() : 0,
+          durationText:
+              timeInMinutes != null ? timeInMinutes.toInt().toString() : "0",
+          encodedPoints: "");
 
       totalDistance = 0.00;
       totalTime = 0;
 
-
       int fares = CommonService.estimateFares(
-          directionDetailsGPS, CommonService.VtypeConverter(CustomParameters.currentVehicleInfomation.vehicleType), widget.tripDetails);
+          directionDetailsGPS,
+          CommonService.VtypeConverter(
+              CustomParameters.currentVehicleInfomation.vehicleType),
+          widget.tripDetails);
 
       CustomParameters.rideRef.child('fares').set(fares.toString());
       CustomParameters.rideRef.child('status').set('ended');
@@ -1261,12 +1279,14 @@ class _PickupScreenState extends State<PickupScreen> {
       topUpEarnings(fares);
 
       ///Saving the Trip history
-      driverTripHistory(widget.tripDetails, fares, directionDetails! ,directionDetailsGPS);
+      driverTripHistory(
+          widget.tripDetails, fares, directionDetails!, directionDetailsGPS);
 
       ///Saving the Payment Details
-      driverPaymentHistory(widget.tripDetails, directionDetails, directionDetailsGPS);
+      driverPaymentHistory(
+          widget.tripDetails, directionDetails, directionDetailsGPS);
 
-      if(widget.tripDetails.bookingID != "NA"){
+      if (widget.tripDetails.bookingID != "NA") {
         doBookingRelatedCleanups(widget.tripDetails.bookingID);
       }
 
@@ -1274,21 +1294,19 @@ class _PickupScreenState extends State<PickupScreen> {
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) => CollectPayment(
-            paymentMethod: widget.tripDetails.paymentMethod,
-            fares: fares,
-          ));
-
-
+                paymentMethod: widget.tripDetails.paymentMethod,
+                fares: fares,
+              ));
     } else {
       print('widget.tripDetails is null');
     }
   }
 
-  void doBookingRelatedCleanups(String bookingID){
+  void doBookingRelatedCleanups(String bookingID) {
     print("snapshot came ===>>> $bookingID");
-    DatabaseReference earningsRef = FirebaseDatabase.instance
-        .reference()
-        .child('rideBookings/$bookingID');
+    DatabaseReference earningsRef =
+        FirebaseDatabase.instance.reference().child('rideBookings/$bookingID');
+
     ///Backup the booking
     earningsRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
@@ -1299,7 +1317,8 @@ class _PickupScreenState extends State<PickupScreen> {
         earningsRef2.set(snapshot.value);
 
         DateTime now = DateTime.now();
-        DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+        DatabaseReference instanceBase = FirebaseDatabase.instance
+            .reference()
             .child('rideBookings/$bookingID/');
         instanceBase.child("status").set("Completed");
         instanceBase.child("completedTime").set(now.toLocal().toString());
@@ -1307,67 +1326,97 @@ class _PickupScreenState extends State<PickupScreen> {
     });
 
     ///Remove the booking entity
-    FirebaseDatabase.instance.reference().child('rideBookings/$bookingID/').remove();
+    FirebaseDatabase.instance
+        .reference()
+        .child('rideBookings/$bookingID/')
+        .remove();
   }
 
-
   void updateCashFlows(TripDetails tripDetailsx) {
-    DatabaseReference earningsRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${CustomParameters.currentFirebaseUser.uid}/cashflows/cr');
+    DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/cashflows/cr');
     earningsRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         ///Top up credit value is one avaiblable
         double oldEarnings = double.parse(snapshot.value.toString());
         double adjustedEarnings =
-            (CustomParameters.paymentDetails.companyPayable.toDouble()) + oldEarnings;
+            (CustomParameters.paymentDetails.companyPayable.toDouble()) +
+                oldEarnings;
         earningsRef.set(adjustedEarnings.toStringAsFixed(2));
       } else {
         ///Create new value if not available
-        double adjustedEarnings = (CustomParameters.paymentDetails.companyPayable.toDouble());
+        double adjustedEarnings =
+            (CustomParameters.paymentDetails.companyPayable.toDouble());
         earningsRef.set(adjustedEarnings.toStringAsFixed(2));
       }
     });
   }
 
-  void driverTripHistory(TripDetails tripDetails, int fare, DirectionDetails directionDetails,DirectionDetails directionDetailsGPS) {
+  void driverTripHistory(TripDetails tripDetails, int fare,
+      DirectionDetails directionDetails, DirectionDetails directionDetailsGPS) {
     if (tripDetails != null) {
-      print("inside driverTripHistory $CustomParameters.currentFirebaseUser.uid");
+      print(
+          "inside driverTripHistory $CustomParameters.currentFirebaseUser.uid");
       DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
           'drivers/${CustomParameters.currentFirebaseUser.uid}/tripHistory/${tripDetails.rideID}');
 
       Map pickupMap = {
-        'latitude': tripDetails.pickup!= null? tripDetails.pickup.latitude.toString():CustomParameters.defaultLocationLat,
-        'longitude': tripDetails.pickup!= null? tripDetails.pickup.longitude.toString():CustomParameters.defaultLocationLng,
+        'latitude': tripDetails.pickup != null
+            ? tripDetails.pickup.latitude.toString()
+            : CustomParameters.defaultLocationLat,
+        'longitude': tripDetails.pickup != null
+            ? tripDetails.pickup.longitude.toString()
+            : CustomParameters.defaultLocationLng,
       };
 
       Map destinationMap = {
-        'latitude': tripDetails.destination!= null ? tripDetails.destination.latitude.toString():CustomParameters.defaultLocationLat ,
-        'longitude': tripDetails.destination!= null ? tripDetails.destination.longitude.toString():CustomParameters.defaultLocationLng,
+        'latitude': tripDetails.destination != null
+            ? tripDetails.destination.latitude.toString()
+            : CustomParameters.defaultLocationLat,
+        'longitude': tripDetails.destination != null
+            ? tripDetails.destination.longitude.toString()
+            : CustomParameters.defaultLocationLng,
       };
 
       Map directionMap = {
-        'distanceText': directionDetailsGPS!= null? directionDetailsGPS.distanceText.toString():"0",
-        'distanceValue': directionDetailsGPS!= null? directionDetailsGPS.distanceValue.toString():"0",
-        'durationValue': directionDetailsGPS!= null?directionDetailsGPS.durationValue.toString():"0",
-        'durationText': directionDetailsGPS!= null? directionDetailsGPS.durationText.toString():"0",
+        'distanceText': directionDetailsGPS != null
+            ? directionDetailsGPS.distanceText.toString()
+            : "0",
+        'distanceValue': directionDetailsGPS != null
+            ? directionDetailsGPS.distanceValue.toString()
+            : "0",
+        'durationValue': directionDetailsGPS != null
+            ? directionDetailsGPS.durationValue.toString()
+            : "0",
+        'durationText': directionDetailsGPS != null
+            ? directionDetailsGPS.durationText.toString()
+            : "0",
       };
 
       Map directionMapGoogle = {
-        'distanceText':directionDetails!= null?  directionDetails.distanceText.toString():"0",
-        'distanceValue': directionDetails!= null? directionDetails.distanceValue.toString():"0",
-        'durationValue':directionDetails!= null? directionDetails.durationValue.toString():"0",
-        'durationText':directionDetails!= null? directionDetails.durationText.toString():"0",
+        'distanceText': directionDetails != null
+            ? directionDetails.distanceText.toString()
+            : "0",
+        'distanceValue': directionDetails != null
+            ? directionDetails.distanceValue.toString()
+            : "0",
+        'durationValue': directionDetails != null
+            ? directionDetails.durationValue.toString()
+            : "0",
+        'durationText': directionDetails != null
+            ? directionDetails.durationText.toString()
+            : "0",
       };
 
       Map historyMap = {
-        "rideID": tripDetails !=null? tripDetails.rideID :"",
+        "rideID": tripDetails != null ? tripDetails.rideID : "",
         "pickup": pickupMap,
         "destination": destinationMap,
         "directionDetails": directionMap,
         "directionDetailsGoogle": directionMapGoogle,
-        "pickupAddress": tripDetails !=null? tripDetails.pickupAddress :"",
-        "destinationAddress":  tripDetails !=null?tripDetails.destinationAddress :"",
+        "pickupAddress": tripDetails != null ? tripDetails.pickupAddress : "",
+        "destinationAddress":
+            tripDetails != null ? tripDetails.destinationAddress : "",
         "fare": fare,
         "date": DateTime.now().toString()
       };
@@ -1377,12 +1426,13 @@ class _PickupScreenState extends State<PickupScreen> {
     }
   }
 
-  void driverPaymentHistory(TripDetails tripDetailsx, DirectionDetails directionDetails,DirectionDetails directionDetailsGPS) async {
+  void driverPaymentHistory(
+      TripDetails tripDetailsx,
+      DirectionDetails directionDetails,
+      DirectionDetails directionDetailsGPS) async {
     print("inside driverTripHistory $CustomParameters.currentFirebaseUser.uid");
     DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
-        'drivers/${CustomParameters.currentFirebaseUser
-            .uid}/paymentHistory/${tripDetailsx.rideID}');
-
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/paymentHistory/${tripDetailsx.rideID}');
 
     if (tripDetailsx.commissionedDriverId != "") {
       if (tripDetailsx.commissionedDriverId.trim() != "system") {
@@ -1391,8 +1441,10 @@ class _PickupScreenState extends State<PickupScreen> {
           'rideId': tripDetailsx.rideID,
           'handled': false,
         };
-        var refCommission = FirebaseDatabase.instance.reference().child(
-            "drivers/${tripDetailsx.commissionedDriverId}/commission").push();
+        var refCommission = FirebaseDatabase.instance
+            .reference()
+            .child("drivers/${tripDetailsx.commissionedDriverId}/commission")
+            .push();
         refCommission.set(commissionMap);
       }
     }
@@ -1414,8 +1466,8 @@ class _PickupScreenState extends State<PickupScreen> {
     Map paymentHistoryMap = {
       "rideID": CustomParameters.paymentDetails.rideID,
       "commission": CustomParameters.paymentDetails.commission,
-      "commissionApplicable": CustomParameters.paymentDetails
-          .commissionApplicable,
+      "commissionApplicable":
+          CustomParameters.paymentDetails.commissionApplicable,
       "companyPayable": CustomParameters.paymentDetails.companyPayable,
       "totalFare": CustomParameters.paymentDetails.totalFare,
       "appPrice": CustomParameters.paymentDetails.appPrice,
@@ -1425,8 +1477,8 @@ class _PickupScreenState extends State<PickupScreen> {
       "pickupAddress": CustomParameters.paymentDetails.pickupAddress,
       "date": DateTime.now().toString(),
       "pickupAddress": tripDetailsx != null ? tripDetailsx.pickupAddress : "",
-      "destinationAddress": tripDetailsx != null ? tripDetailsx
-          .destinationAddress : "",
+      "destinationAddress":
+          tripDetailsx != null ? tripDetailsx.destinationAddress : "",
       "directionDetails": directionMap,
       "directionDetailsGoogle": directionMapGoogle
     };
@@ -1440,8 +1492,7 @@ class _PickupScreenState extends State<PickupScreen> {
         0,
         CustomParameters.paymentDetails.kmPrice,
         CustomParameters.paymentDetails.totalFare,
-        CustomParameters.paymentDetails.timePrice
-    );
+        CustomParameters.paymentDetails.timePrice);
     await FinanceService.updatedateWiseSummary(summary);
 
     var cf = CashFlows(CustomParameters.paymentDetails.companyPayable, 0);
@@ -1454,11 +1505,12 @@ class _PickupScreenState extends State<PickupScreen> {
     // await SalesService.updateKMs(directionDetails.distanceValue/1000);
     // await SalesService.updateKMs(directionDetails.durationValue/60);
 
-
     ///Driver's own Accounting REF
-    DatabaseReference journalsRef = FirebaseDatabase.instance.reference().child(
-        'Accounting/${CustomParameters.currentFirebaseUser
-            .uid}/driverWisejournals/').push();
+    DatabaseReference journalsRef = FirebaseDatabase.instance
+        .reference()
+        .child(
+            'Accounting/${CustomParameters.currentFirebaseUser.uid}/driverWisejournals/')
+        .push();
 
     ///Driver's own Accounting
     Map driverWisejournalsCP = {
@@ -1469,10 +1521,10 @@ class _PickupScreenState extends State<PickupScreen> {
     };
     journalsRef.set(driverWisejournalsCP);
 
-    DatabaseReference journalsRefDE = FirebaseDatabase.instance.reference()
+    DatabaseReference journalsRefDE = FirebaseDatabase.instance
+        .reference()
         .child(
-        'Accounting/${CustomParameters.currentFirebaseUser
-            .uid}/driverWisejournals/')
+            'Accounting/${CustomParameters.currentFirebaseUser.uid}/driverWisejournals/')
         .push();
 
     Map driverWisejournalsDE = {
@@ -1484,13 +1536,14 @@ class _PickupScreenState extends State<PickupScreen> {
     };
     journalsRefDE.set(driverWisejournalsDE);
 
-
     ///Driver's commission apply
     if (tripDetailsx.commissionedDriverId != "") {
       if (tripDetailsx.commissionedDriverId.trim() != "system") {
         DatabaseReference journalsRefCommission = FirebaseDatabase.instance
-            .reference().child(
-            'Accounting/${tripDetailsx.commissionedDriverId }/driverWisejournals/').push();
+            .reference()
+            .child(
+                'Accounting/${tripDetailsx.commissionedDriverId}/driverWisejournals/')
+            .push();
         Map driverWisejournalsCM = {
           'Key': journalsRefCommission.key,
           'TripID': tripDetailsx.rideID,
@@ -1503,9 +1556,8 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   void topUpEarnings(int fares) {
-    DatabaseReference earningsRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile/earnings');
+    DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/profile/earnings');
     earningsRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         double oldEarnings = double.parse(snapshot.value.toString());
@@ -1514,17 +1566,18 @@ class _PickupScreenState extends State<PickupScreen> {
 
         earningsRef.set(adjustedEarnings.toStringAsFixed(2));
       } else {
-        double adjustedEarnings = fares.toDouble() ;
+        double adjustedEarnings = fares.toDouble();
         earningsRef.set(adjustedEarnings.toStringAsFixed(2));
       }
     });
   }
 
-///Migrated method ******************************************************************************************************************************************************
-///**********************************************************************************************************************************************************************
-///**********************************************************************************************************************************************************************
+  ///Migrated method ******************************************************************************************************************************************************
+  ///**********************************************************************************************************************************************************************
+  ///**********************************************************************************************************************************************************************
 
-  Future<void> getDirection(LatLng pickupLatLng, LatLng destinationLatLng) async {
+  Future<void> getDirection(
+      LatLng pickupLatLng, LatLng destinationLatLng) async {
     BuildContext dialogContext = context;
     showDialog(
         barrierDismissible: false,
@@ -1532,14 +1585,15 @@ class _PickupScreenState extends State<PickupScreen> {
         builder: (BuildContext context) {
           dialogContext = context;
           return ProgressDialog(
-            status: 'Please wait...2', circularProgressIndicatorColor: Colors.redAccent,
+            status: 'Please wait...2',
+            circularProgressIndicatorColor: Colors.redAccent,
           );
         });
 
     var thisDetails = await CommonService.getDirectionDetails(
         pickupLatLng, destinationLatLng);
 
-    if(widget.incomeType ==1){
+    if (widget.incomeType == 1) {
       print('Calling Navigator.pop cus incomeType ==1');
       //Navigator.pop(context);
     }
@@ -1547,7 +1601,7 @@ class _PickupScreenState extends State<PickupScreen> {
     print('getDirection - Create Polyline');
     PolylinePoints polylinePoints = PolylinePoints();
     List<PointLatLng> results =
-    polylinePoints.decodePolyline(thisDetails!.encodedPoints);
+        polylinePoints.decodePolyline(thisDetails!.encodedPoints);
 
     polylineCoordinates.clear();
     if (results.isNotEmpty) {
@@ -1586,7 +1640,7 @@ class _PickupScreenState extends State<PickupScreen> {
       bounds = LatLngBounds(
           southwest: LatLng(pickupLatLng.latitude, destinationLatLng.longitude),
           northeast:
-          LatLng(destinationLatLng.latitude, pickupLatLng.longitude));
+              LatLng(destinationLatLng.latitude, pickupLatLng.longitude));
     } else if (pickupLatLng.latitude > destinationLatLng.latitude) {
       bounds = LatLngBounds(
         southwest: LatLng(destinationLatLng.latitude, pickupLatLng.longitude),
@@ -1642,16 +1696,14 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   doRide() async {
-    if(CustomParameters.homeTabPositionStream != null) {
+    if (CustomParameters.homeTabPositionStream != null) {
       await CustomParameters.homeTabPositionStream!.cancel();
     }
-
-
+    await startLocationUpdate();
     CustomParameters.rideRef = FirebaseDatabase.instance
         .reference()
         .child("rideRequest/${widget.tripDetails.rideID}");
-    print(
-        "onPress status $status");
+    print("onPress status $status");
 
     if (status == 'init') {
       status = 'accepted';
@@ -1663,12 +1715,8 @@ class _PickupScreenState extends State<PickupScreen> {
       });
       print(
           "LatLng pos.longitude ${CustomParameters.currentPosition.longitude}");
-      print(
-          "LatLng pos.latitude ${CustomParameters.currentPosition.latitude}");
-
-    }
-
-    else if (status == 'accepted') {
+      print("LatLng pos.latitude ${CustomParameters.currentPosition.latitude}");
+    } else if (status == 'accepted') {
       status = 'arrived';
       CustomParameters.rideRef.child('status').set(('arrived'));
 
@@ -1684,24 +1732,23 @@ class _PickupScreenState extends State<PickupScreen> {
           builder: (BuildContext context) {
             dialogContext = context;
             return ProgressDialog(
-              status: 'Please wait...2', circularProgressIndicatorColor: Colors.redAccent,
+              status: 'Please wait...2',
+              circularProgressIndicatorColor: Colors.redAccent,
             );
           });
 
-      await getDirection(widget.tripDetails.pickup,
-          widget.tripDetails.destination);
+      await getDirection(
+          widget.tripDetails.pickup, widget.tripDetails.destination);
       print('Calling Navigator.pop on Point 1');
 
-      if(widget.tripDetails.bookingID != "NA"){
-        DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+      if (widget.tripDetails.bookingID != "NA") {
+        DatabaseReference instanceBase = FirebaseDatabase.instance
+            .reference()
             .child('rideBookings/${widget.tripDetails.bookingID}/');
         instanceBase.child("status").set("Arrived");
       }
       Navigator.pop(dialogContext);
-
-    }
-
-    else if (status == 'arrived') {
+    } else if (status == 'arrived') {
       resetTelemetryValues();
       // _launchMapsUrl(widget.tripDetails.pickup,
       //     widget.tripDetails.destination);
@@ -1719,20 +1766,16 @@ class _PickupScreenState extends State<PickupScreen> {
         buttonColor = Color(0xFF263238);
       });
 
-      if(widget.tripDetails.bookingID != "NA"){
-        DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
+      if (widget.tripDetails.bookingID != "NA") {
+        DatabaseReference instanceBase = FirebaseDatabase.instance
+            .reference()
             .child('rideBookings/${widget.tripDetails.bookingID}/');
         instanceBase.child("status").set("OnTrip");
       }
       //To count how many minutes spend on a trip
       startTimer();
-    }
-    else if (status == 'ontrip') {
+    } else if (status == 'ontrip') {
       endTrip();
     }
-
   }
-
-
-
 }

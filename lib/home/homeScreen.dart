@@ -42,7 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-
   late GoogleMapController mapController;
   bool cancelLocationUpdate = false;
   late DatabaseReference tripRequestRef;
@@ -60,15 +59,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
-
   void availabilityButtonPress() async {
     print("HomeTab- availabilityButtonPress Start of the method");
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
       showAlert(
-          context,'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
-          );
+        context,
+        'No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.)',
+      );
       return;
     }
 
@@ -84,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
     // }
   }
 
-
   ///Getting driver information
   Future<void> getCurrentDriverInfo(Location currentPositionx) async {
     print("Inside getCurrentDriverInfo");
@@ -94,7 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
         .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile');
 
     driverRef.once().then((DataSnapshot snapshot) {
-      print("HomeTab- getCurrentDriverInfo isOnlineStatus =   ${snapshot.value["onlineStatus"]}");
+      print(
+          "HomeTab- getCurrentDriverInfo isOnlineStatus =   ${snapshot.value["onlineStatus"]}");
 
       if (snapshot.value != null) {
         CustomParameters.currentDriverInfo = Driver.fromSnapshot(snapshot);
@@ -111,8 +110,11 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         if (snapshot.value["inMiddleOfTrip"] != null) {
-          print("inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}");
-          inMiddleOfTrip =  snapshot.value["inMiddleOfTrip"].toString().toLowerCase() =='true';
+          print(
+              "inMiddleOfTrip ${snapshot.value["inMiddleOfTrip"].toString()}");
+          inMiddleOfTrip =
+              snapshot.value["inMiddleOfTrip"].toString().toLowerCase() ==
+                  'true';
         }
         if (snapshot.value["rideId"] != null) {
           print("existingRideId  ${snapshot.value["rideId"].toString()}");
@@ -128,13 +130,16 @@ class _HomeScreenState extends State<HomeScreen> {
     DataSnapshot vehicleRef = await FirebaseDatabase.instance
         .reference()
         .child(
-        'drivers/${CustomParameters.currentFirebaseUser.uid}/vehicle_details')
+            'drivers/${CustomParameters.currentFirebaseUser.uid}/vehicle_details')
         .once();
 
-    CustomParameters.currentVehicleInfomation = VehicleInfomation.fromShapShot(vehicleRef);
-    print("Vehicle type VtypeConverter :- ${CustomParameters.VtypeConverter(CustomParameters.currentVehicleInfomation.vehicleType)}");
+    CustomParameters.currentVehicleInfomation =
+        VehicleInfomation.fromShapShot(vehicleRef);
+    print(
+        "Vehicle type VtypeConverter :- ${CustomParameters.VtypeConverter(CustomParameters.currentVehicleInfomation.vehicleType)}");
 
-    var latlng = LatLng(currentPositionx.latitude!, currentPositionx.longitude!);
+    var latlng =
+        LatLng(currentPositionx.latitude!, currentPositionx.longitude!);
     PushNotificationService pushNotificationService = PushNotificationService();
     pushNotificationService.initialize(context, latlng);
   }
@@ -142,30 +147,51 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<bool> initializeAll() async {
     CustomParameters.rideRef = FirebaseDatabase.instance.reference();
     CustomParameters.posError = LatLng(6.877133555388284, 79.98983549839619);
+
     ///Serial Service and get Serials
     await SerialService.initSerials();
+
     ///Get Vehicle types
-    CustomParameters.globalVTypes =    (await CommonService().getVehicleTypeInfo())!;
+    CustomParameters.globalVTypes =
+        (await CommonService().getVehicleTypeInfo())!;
+
     ///Get positions
     await CommonService.determinePosition();
-    CustomParameters.currentPosition =   Location(longitude: 6.877317676732788, latitude: 79.9899282496178,isMock: true,accuracy: 10,altitude: 10,bearing: 160,speed: 0, time: 10);
+    CustomParameters.currentPosition = Location(
+        longitude: 6.877317676732788,
+        latitude: 79.9899282496178,
+        isMock: true,
+        accuracy: 10,
+        altitude: 10,
+        bearing: 160,
+        speed: 0,
+        time: 10);
+
     ///Need To Implement
     //await getCurrentDriverInfo(CustomParameters.currentPosition);
     CommonService.handleOnlineStatus(CustomParameters.currentFirebaseUser.uid);
+
     ///Loading system settings
-    CustomParameters.systemSettings = (await CommonService().fetchSystemConfigurations())!;
+    CustomParameters.systemSettings =
+        (await CommonService().fetchSystemConfigurations())!;
+
     ///loading current driver information from profile
     await getCurrentDriverInfo(CustomParameters.currentPosition);
+
     ///Loading daily finance
-    CustomParameters.dailyParameters = (await FinanceService.getDailyFinance())!;
-    print("CustomParameters.dailyParameters ${CustomParameters.dailyParameters.commission}");
+    CustomParameters.dailyParameters =
+        (await FinanceService.getDailyFinance())!;
+    print(
+        "CustomParameters.dailyParameters ${CustomParameters.dailyParameters.commission}");
 
     try {
       //Position position = await HelperMethods.determinePositionRaw();
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.bestForNavigation);
-      CustomParameters.currentPosition = Location(longitude: position.longitude,latitude: position.latitude);
-      print("CustomParameters.currentPosition ${ CustomParameters.currentPosition}");
+      CustomParameters.currentPosition =
+          Location(longitude: position.longitude, latitude: position.latitude);
+      print(
+          "CustomParameters.currentPosition ${CustomParameters.currentPosition}");
     } catch (e) {
       print('Error: ${e.toString()}');
     }
@@ -181,11 +207,12 @@ class _HomeScreenState extends State<HomeScreen> {
       onWillPop: () async {
         showDialog(
             context: context,
-            builder: (context) =>
-                AlertDialog(title: Text(
-                  'You cannot go back from this screen. please close the app if you want to exit(ඔබට මෙම මෙනුවෙන් ඉවතට යා නොහැක. එසේ කිරීමට Go2Go යෙදුම මෙනුවෙන් වසා දමන්න )',
-                  style: GoogleFonts.roboto(
-                      fontSize: 15, color: Color(0xFFd32f2f)),),
+            builder: (context) => AlertDialog(
+                    title: Text(
+                      'You cannot go back from this screen. please close the app if you want to exit(ඔබට මෙම මෙනුවෙන් ඉවතට යා නොහැක. එසේ කිරීමට Go2Go යෙදුම මෙනුවෙන් වසා දමන්න )',
+                      style: GoogleFonts.roboto(
+                          fontSize: 15, color: Color(0xFFd32f2f)),
+                    ),
                     actions: <Widget>[
                       ElevatedButton(
                           child: const Text('OK'),
@@ -195,191 +222,180 @@ class _HomeScreenState extends State<HomeScreen> {
         return false;
       },
       child: Container(
-        color:Theme.of(context).scaffoldBackgroundColor,
-        child: FutureBuilder<bool>(
-          future: _future, // a Future<String> or null
-          builder: (BuildContext context,
-              AsyncSnapshot<bool> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-              return loadingIndicators('Waiting for connection....');
-              case ConnectionState.waiting:
-                return loadingIndicators('Initializing....');
-              default:
-                if (snapshot.hasError) {
-                  return loadingIndicators('Error: ${snapshot.error}');
-                }
-                else {
-                  return Scaffold(
-                    key: _scaffoldKey,
-                    drawer: SizedBox(
-                      width: MediaQuery
-                          .of(context)
-                          .size
-                          .width * 0.75 < 400 ? MediaQuery
-                          .of(context)
-                          .size
-                          .width * 0.75 : 350,
-                      child: Drawer(
-                        child: AppDrawer(
-                          selectItemName: 'Home',
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: FutureBuilder<bool>(
+            future: _future, // a Future<String> or null
+            builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                  return loadingIndicators('Waiting for connection....');
+                case ConnectionState.waiting:
+                  return loadingIndicators('Initializing....');
+                default:
+                  if (snapshot.hasError) {
+                    return loadingIndicators('Error: ${snapshot.error}');
+                  } else {
+                    return Scaffold(
+                      key: _scaffoldKey,
+                      drawer: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.75 < 400
+                            ? MediaQuery.of(context).size.width * 0.75
+                            : 350,
+                        child: Drawer(
+                          child: AppDrawer(
+                            selectItemName: 'Home',
+                          ),
                         ),
                       ),
-                    ),
-                    appBar: AppBar(
-                      backgroundColor: isOffline? Theme.of(context).primaryColor : Theme.of(context).scaffoldBackgroundColor ,
-                      automaticallyImplyLeading: false,
-                      title: Row(
-                        children: <Widget>[
-                          SizedBox(
-                            height: AppBar().preferredSize.height,
-                            width: AppBar().preferredSize.height + 40,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                alignment: Alignment.centerLeft,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    _scaffoldKey.currentState!.openDrawer();
-                                  },
-                                  child: Icon(
-                                    Icons.dehaze,
-                                    color: Theme
-                                        .of(context)
-                                        .textTheme
-                                        .headline6!
-                                        .color,
+                      appBar: AppBar(
+                        backgroundColor: isOffline
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).scaffoldBackgroundColor,
+                        automaticallyImplyLeading: false,
+                        title: Row(
+                          children: <Widget>[
+                            SizedBox(
+                              height: AppBar().preferredSize.height,
+                              width: AppBar().preferredSize.height + 40,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _scaffoldKey.currentState!.openDrawer();
+                                    },
+                                    child: Icon(
+                                      Icons.dehaze,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .headline6!
+                                          .color,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: !isOffline
-                                ? Text(
-                              AppLocalizations.of('OFFLINE'),
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .headline6!
-                                  .copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .headline6!
-                                    .color,
-                              ),
-                              textAlign: TextAlign.center,
-                            )
-                                : Text(
-                              AppLocalizations.of('ONLINE'),
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .headline6!
-                                  .copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme
-                                    .of(context).canvasColor,
-                              ),
-                              textAlign: TextAlign.center,
+                            Expanded(
+                              child: !isOffline
+                                  ? Text(
+                                      AppLocalizations.of('OFFLINE'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6!
+                                          .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .headline6!
+                                                .color,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    )
+                                  : Text(
+                                      AppLocalizations.of('ONLINE'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6!
+                                          .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                Theme.of(context).canvasColor,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
                             ),
-                          ),
-                          SizedBox(
-                            height: AppBar().preferredSize.height,
-                            width: AppBar().preferredSize.height + 40,
-                            child: Container(
-                              alignment: Alignment.centerRight,
-                              child: Switch(
-                                activeColor: Theme.of(context).disabledColor,
-                                value: isOffline,
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    isOffline = !isOffline;
-                                    offLineOnline(isOffline);
-                                  });
-                                },
+                            SizedBox(
+                              height: AppBar().preferredSize.height,
+                              width: AppBar().preferredSize.height + 40,
+                              child: Container(
+                                alignment: Alignment.centerRight,
+                                child: Switch(
+                                  activeColor: Theme.of(context).disabledColor,
+                                  value: isOffline,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      isOffline = !isOffline;
+                                      offLineOnline(isOffline);
+                                    });
+                                  },
+                                ),
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                      body: Stack(
+                        children: <Widget>[
+                          GoogleMap(
+                            mapType: MapType.normal,
+                            myLocationButtonEnabled: true,
+                            myLocationEnabled: true,
+                            zoomGesturesEnabled: true,
+                            zoomControlsEnabled: true,
+
+                            initialCameraPosition: CustomParameters.googlePlex,
+                            onMapCreated: (GoogleMapController controller) {
+                              _controller.complete(controller);
+                              mapController = controller;
+                              setLDMapStyle();
+                            },
+                            // markers: Set<Marker>.of(getMarkerList(context).values),
+                            // polylines: Set<Polyline>.of(
+                            //     getPolyLine(context).values),
                           ),
+                          !isOffline
+                              ? Column(
+                                  children: <Widget>[
+                                    offLineMode(),
+                                    Expanded(
+                                      child: SizedBox(),
+                                    ),
+                                    myLocation(),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    offLineModeDetail(),
+                                    Container(
+                                      height:
+                                          MediaQuery.of(context).padding.bottom,
+                                      color: Theme.of(context)
+                                          .scaffoldBackgroundColor,
+                                    )
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: SizedBox(),
+                                    ),
+                                    myLocation(),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    offLineModeDetail(),
+                                    //onLineModeDetail(),
+                                  ],
+                                ),
                         ],
                       ),
-                    ),
-                    body: Stack(
-                      children: <Widget>[
-                        GoogleMap(
-                          mapType: MapType.normal,
-                          myLocationButtonEnabled: true,
-                          myLocationEnabled: true,
-                          zoomGesturesEnabled: true,
-                          zoomControlsEnabled: true,
-
-                          initialCameraPosition: CustomParameters.googlePlex,
-                          onMapCreated: (GoogleMapController controller) {
-                            _controller.complete(controller);
-                            mapController = controller;
-                            setLDMapStyle();
-                          },
-                          // markers: Set<Marker>.of(getMarkerList(context).values),
-                          // polylines: Set<Polyline>.of(
-                          //     getPolyLine(context).values),
-                        ),
-                        !isOffline
-                            ? Column(
-                          children: <Widget>[
-                            offLineMode(),
-                            Expanded(
-                              child: SizedBox(),
-                            ),
-                            myLocation(),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            offLineModeDetail(),
-                            Container(
-                              height: MediaQuery
-                                  .of(context)
-                                  .padding
-                                  .bottom,
-                              color: Theme
-                                  .of(context)
-                                  .scaffoldBackgroundColor,
-                            )
-                          ],
-                        )
-                            : Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                              child: SizedBox(),
-                            ),
-                            myLocation(),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            offLineModeDetail(),
-                            //onLineModeDetail(),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }
-            }
-          },
-        )
-      ),
+                    );
+                  }
+              }
+            },
+          )),
     );
   }
 
   ///Handle online offline status factors /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*
   void offLineOnline(status) {
-    if(status){
-      getLocationUpdates();
+    if (status) {
+      //getLocationUpdates();
       CustomParameters.isOnline = true;
       goOnline();
-    }else{
+    } else {
       goOffline();
     }
   }
@@ -390,26 +406,30 @@ class _HomeScreenState extends State<HomeScreen> {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
-      showAlert(context,"No internet Connection No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.");
+      showAlert(context,
+          "No internet Connection No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.");
       return;
     }
-    print('Inside GoOnline currentPosition.latitude = ${CustomParameters.currentPosition != null ? CustomParameters.currentPosition.latitude : "currentPosition Is empty"} ');
+    print(
+        'Inside GoOnline currentPosition.latitude = ${CustomParameters.currentPosition != null ? CustomParameters.currentPosition.latitude : "currentPosition Is empty"} ');
     CustomParameters.isOnline = true;
     cancelLocationUpdate = false;
     Geofire.initialize('driversAvailable');
     print("Geofire Started");
     Geofire.setLocation(
         CustomParameters.currentFirebaseUser.uid,
-        CustomParameters.currentPosition != null ? CustomParameters.currentPosition.latitude! : CustomParameters.posError.latitude,
-        CustomParameters.currentPosition != null ? CustomParameters.currentPosition.longitude! : CustomParameters.posError.longitude);
-    tripRequestRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile/newtrip');
+        CustomParameters.currentPosition != null
+            ? CustomParameters.currentPosition.latitude!
+            : CustomParameters.posError.latitude,
+        CustomParameters.currentPosition != null
+            ? CustomParameters.currentPosition.longitude!
+            : CustomParameters.posError.longitude);
+    tripRequestRef = FirebaseDatabase.instance.reference().child(
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/profile/newtrip');
     tripRequestRef.set('waiting');
 
-    tripRequestRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile/onlineStatus');
+    tripRequestRef = FirebaseDatabase.instance.reference().child(
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/profile/onlineStatus');
     tripRequestRef.set('online');
 
     tripRequestRef.onValue.listen((event) {
@@ -422,20 +442,19 @@ class _HomeScreenState extends State<HomeScreen> {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
-      showAlert(context,"No internet Connection No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.");
+      showAlert(context,
+          "No internet Connection No internet connectivity(අන්තර්ජාල සම්බන්ධතාවය විසන්ධි වී ඇත. කරුණාකර නැවත සම්බන්ද කරන්න.");
       return;
     }
     CustomParameters.isOnline = false;
     cancelLocationUpdate = true;
 
     Geofire.removeLocation(CustomParameters.currentFirebaseUser.uid);
-    tripRequestRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile/newtrip');
+    tripRequestRef = FirebaseDatabase.instance.reference().child(
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/profile/newtrip');
 
-    tripRequestRef = FirebaseDatabase.instance
-        .reference()
-        .child('drivers/${CustomParameters.currentFirebaseUser.uid}/profile/onlineStatus');
+    tripRequestRef = FirebaseDatabase.instance.reference().child(
+        'drivers/${CustomParameters.currentFirebaseUser.uid}/profile/onlineStatus');
     tripRequestRef.set('offline');
     setState(() {
       cancelLocationUpdate = true;
@@ -452,8 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
       desc: message,
       style: AlertStyle(
           descStyle: TextStyle(fontSize: 15),
-          titleStyle: TextStyle(color: Color(0xFFEB1465))
-      ),
+          titleStyle: TextStyle(color: Color(0xFFEB1465))),
       buttons: [
         DialogButton(
           child: Text(
@@ -471,43 +489,38 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget loadingIndicators(String message) {
     return Scaffold(
         body: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              new BoxShadow(
-                color: AppTheme.isLightTheme ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.2),
-                blurRadius: 12,
-              ),
-            ],
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          new BoxShadow(
+            color: AppTheme.isLightTheme
+                ? Colors.black.withOpacity(0.2)
+                : Colors.white.withOpacity(0.2),
+            blurRadius: 12,
           ),
-
-          child: Column(
-            // Vertically center the widget inside the column
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                Icons.cloud_download_outlined,
-                color: Theme.of(context).primaryColor,
-                size: 100,
-              ),
-              Text(AppLocalizations.of(message),
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle2!
-                    .copyWith(
+        ],
+      ),
+      child: Column(
+        // Vertically center the widget inside the column
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            Icons.cloud_download_outlined,
+            color: Theme.of(context).primaryColor,
+            size: 100,
+          ),
+          Text(
+            AppLocalizations.of(message),
+            style: Theme.of(context).textTheme.subtitle2!.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Theme
-                      .of(context)
-                      .primaryColor,
+                  color: Theme.of(context).primaryColor,
                 ),
-              )
-
-            ],
-          ),
-        ));
+          )
+        ],
+      ),
+    ));
   }
 
   ///Bottom part of the Screen when offline
@@ -530,7 +543,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: <Widget>[
-
             Animator<Offset>(
               tween: Tween<Offset>(
                 begin: Offset(0, 0.4),
@@ -578,9 +590,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: <Widget>[
                                     Text(
                                       AppLocalizations.of('Esther Berry'),
-                                      style: Theme.of(context).textTheme.headline6!.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6!
+                                          .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).textTheme.headline6!.color,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .headline6!
+                                                .color,
                                           ),
                                     ),
                                     SizedBox(
@@ -594,9 +612,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: Center(
                                             child: Text(
                                               AppLocalizations.of('ApplePay'),
-                                              style: Theme.of(context).textTheme.button!.copyWith(
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .button!
+                                                  .copyWith(
                                                     fontWeight: FontWeight.bold,
-                                                    color: ConstanceData.secoundryFontColor,
+                                                    color: ConstanceData
+                                                        .secoundryFontColor,
                                                   ),
                                             ),
                                           ),
@@ -604,7 +626,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             borderRadius: BorderRadius.all(
                                               Radius.circular(15),
                                             ),
-                                            color: Theme.of(context).primaryColor,
+                                            color:
+                                                Theme.of(context).primaryColor,
                                           ),
                                         ),
                                         SizedBox(
@@ -616,9 +639,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: Center(
                                             child: Text(
                                               AppLocalizations.of('Discount'),
-                                              style: Theme.of(context).textTheme.button!.copyWith(
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .button!
+                                                  .copyWith(
                                                     fontWeight: FontWeight.bold,
-                                                    color: ConstanceData.secoundryFontColor,
+                                                    color: ConstanceData
+                                                        .secoundryFontColor,
                                                   ),
                                             ),
                                           ),
@@ -626,7 +653,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             borderRadius: BorderRadius.all(
                                               Radius.circular(15),
                                             ),
-                                            color: Theme.of(context).primaryColor,
+                                            color:
+                                                Theme.of(context).primaryColor,
                                           ),
                                         )
                                       ],
@@ -641,15 +669,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: <Widget>[
                                     Text(
                                       '\$25.00',
-                                      style: Theme.of(context).textTheme.headline6!.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6!
+                                          .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).textTheme.headline6!.color,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .headline6!
+                                                .color,
                                           ),
                                     ),
                                     Text(
                                       '2.2 km',
-                                      style: Theme.of(context).textTheme.caption!.copyWith(
-                                            color: Theme.of(context).disabledColor,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption!
+                                          .copyWith(
+                                            color:
+                                                Theme.of(context).disabledColor,
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
@@ -663,7 +701,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Theme.of(context).disabledColor,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(right: 14, left: 14, top: 10, bottom: 10),
+                            padding: const EdgeInsets.only(
+                                right: 14, left: 14, top: 10, bottom: 10),
                             child: Row(
                               children: <Widget>[
                                 Column(
@@ -671,16 +710,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: <Widget>[
                                     Text(
                                       AppLocalizations.of('PICKUP'),
-                                      style: Theme.of(context).textTheme.caption!.copyWith(
-                                            color: Theme.of(context).disabledColor,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption!
+                                          .copyWith(
+                                            color:
+                                                Theme.of(context).disabledColor,
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
                                     Text(
                                       AppLocalizations.of('79 Swift Village'),
-                                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle2!
+                                          .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).textTheme.headline6!.color,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .headline6!
+                                                .color,
                                           ),
                                     ),
                                   ],
@@ -693,7 +742,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Theme.of(context).disabledColor,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(right: 14, left: 14, top: 10, bottom: 10),
+                            padding: const EdgeInsets.only(
+                                right: 14, left: 14, top: 10, bottom: 10),
                             child: Row(
                               children: <Widget>[
                                 Column(
@@ -701,16 +751,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: <Widget>[
                                     Text(
                                       AppLocalizations.of('DROP OFF'),
-                                      style: Theme.of(context).textTheme.caption!.copyWith(
-                                            color: Theme.of(context).disabledColor,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .caption!
+                                          .copyWith(
+                                            color:
+                                                Theme.of(context).disabledColor,
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
                                     Text(
-                                      AppLocalizations.of('115 William St, Chicago, US'),
-                                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                                      AppLocalizations.of(
+                                          '115 William St, Chicago, US'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .subtitle2!
+                                          .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).textTheme.headline6!.color,
+                                            color: Theme.of(context)
+                                                .textTheme
+                                                .headline6!
+                                                .color,
                                           ),
                                     ),
                                   ],
@@ -723,7 +784,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Theme.of(context).disabledColor,
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(right: 14, left: 14, top: 10, bottom: 10),
+                            padding: const EdgeInsets.only(
+                                right: 14, left: 14, top: 10, bottom: 10),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: <Widget>[
@@ -732,14 +794,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   width: 80,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
-                                    color: Theme.of(context).scaffoldBackgroundColor,
+                                    color: Theme.of(context)
+                                        .scaffoldBackgroundColor,
                                   ),
                                   child: Center(
                                     child: Text(
                                       AppLocalizations.of('Ignore'),
-                                      style: Theme.of(context).textTheme.button!.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .button!
+                                          .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).disabledColor,
+                                            color:
+                                                Theme.of(context).disabledColor,
                                           ),
                                     ),
                                   ),
@@ -757,9 +824,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Center(
                                     child: Text(
                                       AppLocalizations.of('ACCEPT'),
-                                      style: Theme.of(context).textTheme.button!.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .button!
+                                          .copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: ConstanceData.secoundryFontColor,
+                                            color: ConstanceData
+                                                .secoundryFontColor,
                                           ),
                                     ),
                                   ),
@@ -784,9 +855,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // ignore: unnecessary_null_comparison
     if (mapController != null) {
       if (AppTheme.isLightTheme) {
-        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/lightmapstyle.json"));
+        mapController.setMapStyle(await DefaultAssetBundle.of(context)
+            .loadString("jsonFile/lightmapstyle.json"));
       } else {
-        mapController.setMapStyle(await DefaultAssetBundle.of(context).loadString("jsonFile/darkmapstyle.json"));
+        mapController.setMapStyle(await DefaultAssetBundle.of(context)
+            .loadString("jsonFile/darkmapstyle.json"));
       }
     }
   }
@@ -840,7 +913,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      AppLocalizations.of(CustomParameters.currentDriverInfo.fullName),
+                      AppLocalizations.of(
+                          CustomParameters.currentDriverInfo.fullName),
                       style: Theme.of(context).textTheme.headline6!.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
@@ -848,7 +922,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                     ),
                     Text(
-                      AppLocalizations.of(CustomParameters.currentDriverInfo.driverLevel),
+                      AppLocalizations.of(
+                          CustomParameters.currentDriverInfo.driverLevel),
                       style: Theme.of(context).textTheme.subtitle2!.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).primaryColor,
@@ -863,7 +938,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
                     Text(
-                      '${CustomParameters.dailyParameters.commission>1 ? CustomParameters.dailyParameters.commission : 0.00 } LKR',
+                      '${CustomParameters.dailyParameters.commission > 1 ? CustomParameters.dailyParameters.commission : 0.00} LKR',
                       style: Theme.of(context).textTheme.headline6!.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).textTheme.headline6!.color,
@@ -908,21 +983,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 4,
                         ),
                         Text(
-                          '${CustomParameters.dailyParameters.earning>1 ? CustomParameters.dailyParameters.earning : 0.00 } LKR',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: ConstanceData.secoundryFontColor,
-                              ),
+                          '${CustomParameters.dailyParameters.earning > 1 ? CustomParameters.dailyParameters.earning : 0.00} LKR',
+                          style:
+                              Theme.of(context).textTheme.subtitle1!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: ConstanceData.secoundryFontColor,
+                                  ),
                         ),
                         Row(
                           children: <Widget>[
                             Text(
                               //earning
                               AppLocalizations.of('EARNINGS'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).scaffoldBackgroundColor,
-                                  ),
+                              style:
+                                  Theme.of(context).textTheme.caption!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
                             ),
                           ],
                         ),
@@ -942,20 +1020,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 4,
                         ),
                         Text(
-                          '${CustomParameters.dailyParameters.totalDistance>1 ? CustomParameters.dailyParameters.totalDistance : 0.00 } KM',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: ConstanceData.secoundryFontColor,
-                              ),
+                          '${CustomParameters.dailyParameters.totalDistance > 1 ? CustomParameters.dailyParameters.totalDistance : 0.00} KM',
+                          style:
+                              Theme.of(context).textTheme.subtitle1!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: ConstanceData.secoundryFontColor,
+                                  ),
                         ),
                         Row(
                           children: <Widget>[
                             Text(
                               AppLocalizations.of('TOTAL DISTANCE'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).scaffoldBackgroundColor,
-                                  ),
+                              style:
+                                  Theme.of(context).textTheme.caption!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
                             ),
                           ],
                         ),
@@ -976,19 +1057,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Text(
                           '${CustomParameters.dailyParameters.totalTrips}',
-                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: ConstanceData.secoundryFontColor,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.subtitle1!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: ConstanceData.secoundryFontColor,
+                                  ),
                         ),
                         Row(
                           children: <Widget>[
                             Text(
                               AppLocalizations.of('TOTAL TRIPS'),
-                              style: Theme.of(context).textTheme.caption!.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).scaffoldBackgroundColor,
-                                  ),
+                              style:
+                                  Theme.of(context).textTheme.caption!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                      ),
                             ),
                           ],
                         ),
@@ -1113,7 +1197,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future seticonimage3(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation3 == null) {
-    final ImageConfiguration imagesStartConfiguration3 = createLocalImageConfiguration(context);
+    final ImageConfiguration imagesStartConfiguration3 =
+        createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation3 = await BitmapDescriptor.fromAssetImage(
       imagesStartConfiguration3,
       ConstanceData.mylocation3,
@@ -1125,7 +1210,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future seticonimage2(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation2 == null) {
-    final ImageConfiguration imagesStartConfiguration2 = createLocalImageConfiguration(context);
+    final ImageConfiguration imagesStartConfiguration2 =
+        createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation2 = await BitmapDescriptor.fromAssetImage(
       imagesStartConfiguration2,
       ConstanceData.mylocation2,
@@ -1137,7 +1223,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future seticonimage(BuildContext context) async {
     // ignore: unnecessary_null_comparison
     // if (bitmapDescriptorStartLocation == null) {
-    final ImageConfiguration imagesStartConfiguration = createLocalImageConfiguration(context);
+    final ImageConfiguration imagesStartConfiguration =
+        createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation = await BitmapDescriptor.fromAssetImage(
       imagesStartConfiguration,
       ConstanceData.mylocation1,
@@ -1211,19 +1298,23 @@ class _HomeScreenState extends State<HomeScreen> {
   * */
 
   void getLocationUpdates() {
-    print("getLocationUpdates cancelLocationUpdate= $cancelLocationUpdate   isOffline= $isOffline");
+    print(
+        "getLocationUpdates cancelLocationUpdate= $cancelLocationUpdate   isOffline= $isOffline");
     CustomParameters.homeTabPositionStream = Geolocator.getPositionStream(
-        desiredAccuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 2)
+            desiredAccuracy: LocationAccuracy.bestForNavigation,
+            distanceFilter: 2)
         .listen((Position position) {
-      print("getLocationUpdates Status  Inside= $cancelLocationUpdate   isOffline= $isOffline");
-      CustomParameters.currentPosition = new Location(longitude: position.longitude,latitude: position.latitude);
+      print(
+          "getLocationUpdates Status  Inside= $cancelLocationUpdate   isOffline= $isOffline");
+      CustomParameters.currentPosition = new Location(
+          longitude: position.longitude, latitude: position.latitude);
 
       if (isOffline) {
         //Update the location to the firebase
-        print("LocationUpdates -> ${CustomParameters.currentFirebaseUser.uid} ON ${position.latitude.toString()} and ${position.longitude.toString()}");
-        Geofire.setLocation(
-            CustomParameters.currentFirebaseUser.uid, position.latitude, position.longitude);
+        print(
+            "LocationUpdates -> ${CustomParameters.currentFirebaseUser.uid} ON ${position.latitude.toString()} and ${position.longitude.toString()}");
+        Geofire.setLocation(CustomParameters.currentFirebaseUser.uid,
+            position.latitude, position.longitude);
       }
       if (cancelLocationUpdate) {
         //changedx1
@@ -1247,10 +1338,9 @@ class _HomeScreenState extends State<HomeScreen> {
     */
   @override
   void dispose() {
-    if(CustomParameters.homeTabPositionStream != null){
+    if (CustomParameters.homeTabPositionStream != null) {
       CustomParameters.homeTabPositionStream!.cancel();
     }
     super.dispose();
   }
-
 }

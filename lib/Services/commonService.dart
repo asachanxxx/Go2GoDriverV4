@@ -15,7 +15,7 @@ import 'package:my_cab_driver/models/VType.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_cab_driver/widgets/wgt_progressdialog.dart';
 
-class CommonService{
+class CommonService {
   Future<List<VType>?> getVehicleTypeInfo() async {
     var checkRef = await FirebaseDatabase.instance
         .reference()
@@ -44,19 +44,21 @@ class CommonService{
     return null;
   }
 
-
   static void disableHomTabLocationUpdates() {
     CustomParameters.homeTabPositionStream!.pause();
     Geofire.removeLocation(CustomParameters.currentFirebaseUser.uid);
   }
 
   static void enableHomTabLocationUpdates() {
-    if(CustomParameters.homeTabPositionStream != null){
+    if (CustomParameters.homeTabPositionStream != null) {
       CustomParameters.homeTabPositionStream!.resume();
     }
-    Geofire.setLocation(CustomParameters.currentFirebaseUser.uid, CustomParameters.currentPosition.latitude!,
+    Geofire.setLocation(
+        CustomParameters.currentFirebaseUser.uid,
+        CustomParameters.currentPosition.latitude!,
         CustomParameters.currentPosition.longitude!);
   }
+
   /// Determine the current position of the device.
   ///
   /// When the location services are not enabled or permissions
@@ -88,13 +90,12 @@ class CommonService{
     return "Loc ok";
   }
 
-
-
-  static void handleOnlineStatus(String uid){
+  static void handleOnlineStatus(String uid) {
     // Fetch the current user's ID from Firebase Authentication.
 
-    var userStatusDatabaseRef = FirebaseDatabase.instance.reference().child(
-        'statusFactors/drivers/' + uid);
+    var userStatusDatabaseRef = FirebaseDatabase.instance
+        .reference()
+        .child('statusFactors/drivers/' + uid);
     var isOfflineForDatabase = {
       "state": 'offline',
       "last_changed": DateTime.now().toString(),
@@ -113,7 +114,10 @@ class CommonService{
       if (event.snapshot.value == false) {
         return;
       }
-      userStatusDatabaseRef.onDisconnect().set(isOfflineForDatabase).then((value) {
+      userStatusDatabaseRef
+          .onDisconnect()
+          .set(isOfflineForDatabase)
+          .then((value) {
         print("userStatusDatabaseRef  ");
         userStatusDatabaseRef.set(isOnlineForDatabase);
       });
@@ -122,7 +126,7 @@ class CommonService{
 
   Future<SystemSettings?> fetchSystemConfigurations() async {
     var checkRef =
-    await FirebaseDatabase.instance.reference().child("companies").once();
+        await FirebaseDatabase.instance.reference().child("companies").once();
     if (checkRef.value != null) {
       Map<dynamic, dynamic> map = checkRef.value;
       //var firstElement = map.values.toList()[0]['SCR'];
@@ -132,8 +136,8 @@ class CommonService{
     return null;
   }
 
-
-  static Future<DirectionDetails?> getDirectionDetails( LatLng startPosition, LatLng endPosition) async {
+  static Future<DirectionDetails?> getDirectionDetails(
+      LatLng startPosition, LatLng endPosition) async {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult != ConnectivityResult.mobile &&
         connectivityResult != ConnectivityResult.wifi) {
@@ -143,14 +147,14 @@ class CommonService{
     String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${startPosition.latitude}, ${startPosition.longitude}&destination=${endPosition.latitude}, ${endPosition.longitude}&mode=driving&key=AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
     print('Direction URL: ' + url);
-    var response =  await getRequestRevamp(url);
+    var response = await getRequestRevamp(url);
     print('Response getDirectionDetails: $response');
     if (response == 'failed' || response == 'ZERO_RESULTS') {
       return null;
     }
     DirectionDetails directionDetails = DirectionDetails(
         distanceText: response['routes'][0]['legs'][0]['duration']['text'],
-        durationText:  response['routes'][0]['legs'][0]['distance']['text'],
+        durationText: response['routes'][0]['legs'][0]['distance']['text'],
         distanceValue: response['routes'][0]['legs'][0]['distance']['value'],
         durationValue: response['routes'][0]['legs'][0]['duration']['value'],
         encodedPoints: response['routes'][0]['overview_polyline']['points']);
@@ -181,10 +185,12 @@ class CommonService{
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) => ProgressDialog(
-        status: 'Please wait',circularProgressIndicatorColor: Colors.redAccent,
+        status: 'Please wait',
+        circularProgressIndicatorColor: Colors.redAccent,
       ),
     );
   }
+
   static String VtypeConverter(String Vtype) {
     String GlobalVtype = "Type1";
     if (Vtype == null || Vtype.trim() == "") {
@@ -255,7 +261,9 @@ class CommonService{
       * */
     if (details != null) {
       double baseFire = 40;
-      double distanceFire = (details.distanceValue / 1000) * 40;
+
+      ///Distance is from KM
+      double distanceFire = details.distanceValue * 40;
       double timeFire = (details.durationValue / 60) * PerMinute;
       VType tukObject = VType(
           "", double.minPositive, double.minPositive, double.minPositive, "");
@@ -265,7 +273,7 @@ class CommonService{
         tukObject = CustomParameters.globalVTypes
             .singleWhere((element) => element.name.trim() == "Type1");
         baseFire = tukObject.baseFare;
-        distanceFire = (details.distanceValue / 1000) * tukObject.perKM;
+        distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
       } else if (vehicleType == "Type2") {
         // Flex-Nano
@@ -276,7 +284,6 @@ class CommonService{
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
-
       } else if (vehicleType == "Type3") {
         // Flex-Alto
 
@@ -287,7 +294,6 @@ class CommonService{
         timeFire = (details.durationValue) * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
-
       } else if (vehicleType == "Type4") {
         // Mini
         tukObject = CustomParameters.globalVTypes
@@ -297,7 +303,6 @@ class CommonService{
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
-
       } else if (vehicleType == "Type5") {
         // Car
         tukObject = CustomParameters.globalVTypes
@@ -307,7 +312,6 @@ class CommonService{
         timeFire = (details.durationValue / 60) * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
-
       } else if (vehicleType == "Type6") {
         // Minivan
         tukObject = CustomParameters.globalVTypes
@@ -335,24 +339,31 @@ class CommonService{
       double ODR = double.minPositive;
 
       ///Company payable amount calc
-      if (CustomParameters.currentDriverInfo == null || CustomParameters.currentDriverInfo.SCR == null) {
+      if (CustomParameters.currentDriverInfo == null ||
+          CustomParameters.currentDriverInfo.SCR == null) {
         SCR = ((distanceFire + timeFire) * 10) / 100;
       } else {
-        SCR = ((distanceFire + timeFire) * CustomParameters.currentDriverInfo.SCR) / 100;
+        SCR = ((distanceFire + timeFire) *
+                CustomParameters.currentDriverInfo.SCR) /
+            100;
       }
 
       if (tripDetails.commissionApplicable) {
-        if (CustomParameters.currentDriverInfo == null || CustomParameters.currentDriverInfo.ODR == null) {
+        if (CustomParameters.currentDriverInfo == null ||
+            CustomParameters.currentDriverInfo.ODR == null) {
           ODR = ((distanceFire + timeFire) * 5) / 100;
         } else {
-          ODR = ((distanceFire + timeFire) * CustomParameters.currentDriverInfo.ODR) / 100;
+          ODR = ((distanceFire + timeFire) *
+                  CustomParameters.currentDriverInfo.ODR) /
+              100;
         }
       } else {
         ODR = 0;
       }
 
       CustomParameters.paymentDetails.companyPayable = SCR;
-      CustomParameters.paymentDetails.commissionApplicable = tripDetails.commissionApplicable;
+      CustomParameters.paymentDetails.commissionApplicable =
+          tripDetails.commissionApplicable;
       CustomParameters.paymentDetails.commission = ODR;
 
       print(
@@ -374,7 +385,6 @@ class CommonService{
     }
   }
 
-
   /*
    * @desc Function to generate password based on some criteria
    * @param bool _isWithLetters: password must contain letters
@@ -386,7 +396,6 @@ class CommonService{
    */
   static String generatePassword(bool _isWithLetters, bool _isWithUppercase,
       bool _isWithNumbers, bool _isWithSpecial, double _numberCharPassword) {
-
     //Define the allowed chars to use in the password
     String _lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
     String _upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -416,6 +425,4 @@ class CommonService{
 
     return _result;
   }
-
-
 }

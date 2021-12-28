@@ -43,7 +43,7 @@ dependencies:
   connectivity: ^3.0.6
   geolocator: ^7.7.1
   maps_toolkit: ^2.0.0
-  background_location: ^0.7.0
+  background_location: ^0.8.1
   flutter_local_notifications: ^9.1.1
   url_launcher: ^6.0.12
   permission_handler: ^8.3.0
@@ -51,6 +51,7 @@ dependencies:
   wakelock: ^0.5.6
   flutter_sound: ^8.4.2
   flutter_ringtone_player: ^3.1.1
+  location: ^4.2.0
 
 dev_dependencies:
   flutter_test:

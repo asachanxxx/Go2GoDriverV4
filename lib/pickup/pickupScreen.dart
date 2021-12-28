@@ -1,22 +1,22 @@
+// ignore_for_file: unnecessary_statements
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:animator/animator.dart';
-import 'package:background_location/background_location.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_cab_driver/Services/commonService.dart';
 import 'package:my_cab_driver/Services/financeServices.dart';
-import 'package:my_cab_driver/Services/mapKitHelperService.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/models/DateWiseSummary.dart';
@@ -28,11 +28,11 @@ import 'package:my_cab_driver/models/TripDetails.dart';
 import 'package:my_cab_driver/models/VehicleInfomation.dart';
 import 'package:my_cab_driver/widgets/wgt_collectpaymentdialog.dart';
 import 'package:my_cab_driver/widgets/wgt_progressdialog.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../appTheme.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
+import 'package:location/location.dart';
 
 enum DistanceType { Miles, Kilometers }
 
@@ -73,13 +73,9 @@ class _PickupScreenState extends State<PickupScreen> {
   final Completer<GoogleMapController> _controller = Completer();
   late BitmapDescriptor movingMarkerIcon;
 
-  var geoLocator = Geolocator();
-  var locationOptions = LocationOptions(
-      accuracy: LocationAccuracy.bestForNavigation,
-      distanceFilter: 1,
-      timeInterval: 1);
+  var geoLocator = geolocator.Geolocator();
 
-  late Position myPosition;
+  late geolocator.Position myPosition;
   String status = 'init';
   String durationString = '0';
   String DistanceString = '0';
@@ -104,12 +100,20 @@ class _PickupScreenState extends State<PickupScreen> {
   double kmPrice = 45;
   String infoPanel = "Meter Ready..";
   String accuracy = "0";
-  late Location oldPosition2;
   bool startSwitch = true;
   bool isWaited = true;
   bool isStopTimer = false;
   String startButtonText = "START";
   String waitButtonText = "WAIT";
+
+  // Location update Related thisg **********************************************************************************
+  LocationData? oldPosition2;
+  final Location location = Location();
+  LocationData? _location;
+  StreamSubscription<LocationData>? _locationSubscription;
+  String? _error;
+  bool _loading = false;
+  // END *************************************************************************************************************
 
   String getTimeString(DateTime dateTime) {
     return dateTime.hour.toString() +
@@ -131,7 +135,7 @@ class _PickupScreenState extends State<PickupScreen> {
   }
 
   ///Getting driver information
-  Future<void> getCurrentDriverInfo(Location currentPositionx) async {
+  Future<void> getCurrentDriverInfo(LocationData currentPositionx) async {
     print("Inside getCurrentDriverInfo");
     CustomParameters.currentFirebaseUser = FirebaseAuth.instance.currentUser!;
     DatabaseReference driverRef = FirebaseDatabase.instance
@@ -809,7 +813,9 @@ class _PickupScreenState extends State<PickupScreen> {
     */
   @override
   void dispose() {
-    CustomParameters.homeTabPositionStream!.cancel();
+    if (CustomParameters.homeTabPositionStream != null) {
+      CustomParameters.homeTabPositionStream?.cancel();
+    }
     super.dispose();
   }
 
@@ -917,70 +923,90 @@ class _PickupScreenState extends State<PickupScreen> {
     // }
   }
 
-  Future<void> startLocationUpdate() async {
-    // FirebaseService.logtoGPSData('=================================================================================================');
-    // FirebaseService.logtoGPSData('=================================== GPS based Distance tracking is on ===========================');
-    // FirebaseService.logtoGPSData('=================================================================================================');
-    print("New trip Point 3");
-    oldPosition2 = Location(
-        longitude: CustomParameters.currentPosition.longitude,
-        latitude: CustomParameters.currentPosition.latitude);
-    isWaited = false;
-    waitButtonText = "WAIT";
+  ///LOCATION UPDATE LOGIC/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
+  ///DONOT CHANGE THIS LOGIC WITHOUT EXTREAM CAUTION */*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
 
-    print("New trip Point 4");
-    var permission = await Permission.locationAlways.isGranted;
-    if (!permission) {
-      var permisisonState = await Permission.locationAlways.request();
-      if (permisisonState.isDenied || permisisonState.isPermanentlyDenied) {
-        //showToast(context,"Permission has not granted to use location.");
-        print("New trip Point 5");
-        Navigator.pop(context);
-        //return;
-      }
-    } else {
-      //showToast(context,"Permission has not granted to use location.");
-      //Navigator.pop(context);
-      //return;
-      print("New trip Point 6");
-    }
-    print("New trip Point 7");
-    BackgroundLocation.stopLocationService();
-    BackgroundLocation.setAndroidConfiguration(2000);
-    await BackgroundLocation.setAndroidNotification(
-      title: "Go2Go Background location",
-      message: "Go2Go Background location in progress",
-      icon: "@mipmap/ic_launcher",
-    );
-    print("New trip Point 8");
-    await BackgroundLocation.startLocationService(distanceFilter: 20);
-
-    BackgroundLocation.getLocationUpdates((location) {
-      print('Error in updates');
-      try {
-        CustomParameters.currentPosition = location;
-        LatLng pos = LatLng(location.latitude!, location.longitude!);
-        var rotation = MapKitHelperService.getMarkerRotation(
-            oldPosition2.latitude,
-            oldPosition2.longitude,
-            pos.latitude,
-            pos.longitude);
+  Future<void> _listenLocation() async {
+    print("listenLocation");
+    _locationSubscription =
+        location.onLocationChanged.handleError((dynamic err) {
+      if (err is PlatformException) {
         setState(() {
-          this.accuracy = location.accuracy!.toStringAsFixed(0);
-          infoPanel = "On Trip";
-          totalSpeed = location.speed!;
-          var oldPos = oldPosition2 != null ? oldPosition2 : location;
-          totalDistance = totalDistance +
-              calculateDistance(oldPos.latitude, oldPos.longitude,
-                  location.latitude, location.longitude);
-          print("distance  $totalDistance");
+          _error = err.code;
         });
-        oldPosition2 = location;
+      }
+      _locationSubscription?.cancel();
+      setState(() {
+        _locationSubscription = null;
+      });
+    }).listen((LocationData currentLocation) {
+      print("_locationData $currentLocation");
+      try {
+        //CustomParameters.currentPosition = currentLocation;
+        _error = null;
+        _location = currentLocation;
+        LatLng pos =
+            LatLng(currentLocation.latitude!, currentLocation.longitude!);
+        setState(() {
+          accuracy = currentLocation.accuracy!.toStringAsFixed(0);
+          totalSpeed = currentLocation.speed!;
+          var oldPos = oldPosition2;
+          totalDistance = totalDistance +
+              calculateDistance(oldPos!.latitude, oldPos.longitude,
+                  currentLocation.latitude, currentLocation.longitude);
+          totalDistance = double.parse((totalDistance).toStringAsFixed(2));
+          totalSpeed = double.parse((totalSpeed).toStringAsFixed(2));
+          print("distance  $totalDistance  totalSpeed  $totalSpeed");
+        });
+
+        oldPosition2 = currentLocation;
       } catch (e) {
         print('Error in updates ${e}');
       }
     });
-    print("New trip Point 9");
+    setState(() {});
+  }
+
+  Future<void> _stopListen() async {
+    _locationSubscription?.cancel();
+    setState(() {
+      _locationSubscription = null;
+    });
+  }
+
+  Future<void> _getLocation() async {
+    setState(() {
+      _error = null;
+      _loading = true;
+    });
+    try {
+      final LocationData _locationResult = await location.getLocation();
+      setState(() {
+        _location = _locationResult;
+        _loading = false;
+      });
+    } on PlatformException catch (err) {
+      setState(() {
+        _error = err.code;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> startLocationUpdate() async {
+    //location.enableBackgroundMode(enable: true);
+    await _getLocation();
+    oldPosition2 = _location;
+    // location.getLocation().then((_locationData) {
+    //   print("_locationData   $_locationData");
+    //   oldPosition2 = _locationData;
+    // });
+
+    print("oldPosition2 1st glance  $oldPosition2");
+
+    if (_locationSubscription == null) {
+      await _listenLocation();
+    }
   }
 
   double calculateDistance(lat1, lon1, lat2, lon2) {
@@ -992,24 +1018,11 @@ class _PickupScreenState extends State<PickupScreen> {
     return 12742 * asin(sqrt(a));
   }
 
-  double CalDistance(Location pos1, Location pos2, DistanceType type) {
-    print("pos1 : ${pos1.latitude} pos2: ${pos2.latitude}");
-    double R = (type == DistanceType.Miles) ? 3960 : 6371;
-    double dLat = this.toRadian(pos2.latitude! - pos1.latitude!);
-    double dLon = this.toRadian(pos2.longitude! - pos1.longitude!);
-    double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(this.toRadian(pos1.latitude!)) *
-            cos(this.toRadian(pos2.latitude!)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-    double c = 2 * asin(min(1, sqrt(a)));
-    double d = R * c;
-    return d;
-  }
-
   double toRadian(double val) {
     return (pi / 180) * val;
   }
+
+  ///LOCATION UPDATE LOGIC ENDS HERE                 */*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
 
   void resetTelemetryValues() {
     setState(() {
@@ -1020,7 +1033,7 @@ class _PickupScreenState extends State<PickupScreen> {
     });
   }
 
-  void updateTripDetails(Location location) async {
+  void updateTripDetails(LocationData location) async {
     print('Inside : updateTripDetails');
 
     //this if statement will track another trip reqest is on the line if so will skip this entire process
@@ -1209,7 +1222,7 @@ class _PickupScreenState extends State<PickupScreen> {
 
     isWaited = false;
     waitButtonText = "WAIT";
-    BackgroundLocation.stopLocationService();
+    _locationSubscription != null ? _stopListen : null;
     setState(() {
       infoPanel = "Meter Ready..";
       this.accuracy = "Waiting....";
@@ -1228,8 +1241,8 @@ class _PickupScreenState extends State<PickupScreen> {
     if (widget.tripDetails != null) {
       CommonService.showProgressDialog(context);
 
-      myPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.best);
+      myPosition = await geolocator.Geolocator.getCurrentPosition(
+          desiredAccuracy: geolocator.LocationAccuracy.best);
 
       var currentLatLng = LatLng(myPosition.latitude, myPosition.longitude);
       var directionDetails = await CommonService.getDirectionDetails(
@@ -1430,7 +1443,8 @@ class _PickupScreenState extends State<PickupScreen> {
       TripDetails tripDetailsx,
       DirectionDetails directionDetails,
       DirectionDetails directionDetailsGPS) async {
-    print("inside driverTripHistory $CustomParameters.currentFirebaseUser.uid");
+    print(
+        "inside driverTripHistory ${CustomParameters.currentFirebaseUser.uid}");
     DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
         'drivers/${CustomParameters.currentFirebaseUser.uid}/paymentHistory/${tripDetailsx.rideID}');
 
@@ -1699,7 +1713,7 @@ class _PickupScreenState extends State<PickupScreen> {
     if (CustomParameters.homeTabPositionStream != null) {
       await CustomParameters.homeTabPositionStream!.cancel();
     }
-    await startLocationUpdate();
+
     CustomParameters.rideRef = FirebaseDatabase.instance
         .reference()
         .child("rideRequest/${widget.tripDetails.rideID}");
@@ -1750,9 +1764,11 @@ class _PickupScreenState extends State<PickupScreen> {
       Navigator.pop(dialogContext);
     } else if (status == 'arrived') {
       resetTelemetryValues();
+
       // _launchMapsUrl(widget.tripDetails.pickup,
       //     widget.tripDetails.destination);
 
+      await startLocationUpdate();
       status = 'ontrip';
       //Update the firebase status
       CustomParameters.rideRef.child('status').set('ontrip');

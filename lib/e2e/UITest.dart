@@ -898,7 +898,7 @@ class _PhoneVerificationState extends State<UiTest> {
         LatLng pos = LatLng(location.latitude!, location.longitude!);
         setState(() {
           accuracy = location.accuracy!.toStringAsFixed(0);
-          totalSpeed = location.speed! as double;
+          totalSpeed = location.speed!;
           var oldPos = oldPosition2 ?? location;
           totalDistance = totalDistance + calculateDistance(
               oldPos.latitude, oldPos.longitude, location.latitude,

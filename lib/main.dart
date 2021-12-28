@@ -235,7 +235,7 @@ class _MyAppState extends State<MyApp> {
     ///we need to check if the current FirebaseAuth.instance.currentUser
     /// is on the drivers node. if node we have to direct to register
     var currentFirebaseUser = FirebaseAuth.instance.currentUser;
-    var routeName = Routes.UITEST; // Routes.LOGIN2;
+    var routeName = Routes.LOGIN2;
     print("currentFirebaseUser $currentFirebaseUser");
     if (currentFirebaseUser == null) {
       return routeName;
@@ -270,7 +270,7 @@ class _MyAppState extends State<MyApp> {
       }
       // });
     }
-    return Routes.RIDETEST;//routeName;
+    return routeName;
   }
 
   var routes = <String, WidgetBuilder>{

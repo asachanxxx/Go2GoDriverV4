@@ -16,8 +16,7 @@ import 'package:my_cab_driver/models/VType.dart';
 import 'package:my_cab_driver/models/VehicleInfomation.dart';
 import 'package:my_cab_driver/models/dailyParameters.dart';
 
-class CustomParameters{
-
+class CustomParameters {
   static bool fireBaseLogEnable = true;
   static String userProfilePath = "images/drivers/profilePics";
   static String userDocumentPath = "images/drivers/docpath";
@@ -32,18 +31,43 @@ class CustomParameters{
   static late SystemSettings systemSettings;
   static late DatabaseReference rideRef;
   static String ApiKey = "AIzaSyBSixR5_gpaPVfXXIXV-bdDKW624mBrRqQ";
-  static final String geoCodeUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
+  static final String geoCodeUrl =
+      'https://maps.googleapis.com/maps/api/geocode/json';
   static late String token;
-  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   static late AndroidNotificationChannel channel;
-  static Driver currentDriverInfo = Driver(fullName: "", email: "", phone: "", id: "", carModel: "", carColor: "", vehicleNumber: "", SCR: 6.00, ODR: 10, nic: "",driverLevel: '', driverId: '');
+  static Driver currentDriverInfo = Driver(
+      fullName: "",
+      email: "",
+      phone: "",
+      id: "",
+      carModel: "",
+      carColor: "",
+      vehicleNumber: "",
+      SCR: 6.00,
+      ODR: 10,
+      nic: "",
+      driverLevel: '',
+      driverId: '');
   static late VehicleInfomation currentVehicleInfomation;
-  static DailyParameters dailyParameters = DailyParameters(earning: 0.00,commission: 0.00,driveHours: 0.00,totalDistance: 0.00,totalTrips: 0);
+  static DailyParameters dailyParameters = DailyParameters(
+      earning: 0.00,
+      commission: 0.00,
+      driveHours: 0,
+      totalDistance: 0.00,
+      totalTrips: 0);
   static late PaymentDetails paymentDetails;
   static bool appRestaredMiddleOfRide = false;
   static final defaultLocationLat = 6.878947;
   static final defaultLocationLng = 79.921883;
-  static Customer selectedCustomer = Customer(fullName: "", phoneNumber: "", driverID: "", CustomerID: "", Id: "", nicName: "");
+  static Customer selectedCustomer = Customer(
+      fullName: "",
+      phoneNumber: "",
+      driverID: "",
+      CustomerID: "",
+      Id: "",
+      nicName: "");
 
   static final CameraPosition googlePlex = CameraPosition(
     target: LatLng(6.885173, 80.015352),
@@ -90,7 +114,8 @@ class CustomParameters{
     return GlobalVtype;
   }
 
-  static InputDecoration getInputDecorationRegister(BuildContext context, String labelText, Icon ico) {
+  static InputDecoration getInputDecorationRegister(
+      BuildContext context, String labelText, Icon ico) {
     return InputDecoration(
       contentPadding: EdgeInsets.all(10.0),
       labelStyle: GoogleFonts.roboto(color: Colors.black38, fontSize: 16),
@@ -107,5 +132,4 @@ class CustomParameters{
       ),
     );
   }
-
 }

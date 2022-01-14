@@ -34,7 +34,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<bool> _future;
-  bool isOffline = false;
+  bool isOffline = true;
 
   late BitmapDescriptor bitmapDescriptorStartLocation;
   late BitmapDescriptor bitmapDescriptorStartLocation2;
@@ -70,17 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       return;
     }
-
-    print("HomeTab- availabilityButtonPress isOnlineStatus =   $isOffline");
-    // if (!isOffline) {
-    //   goOnline();
-    //   //getLocationUpdates();
-    //   setState(() {
-    //     // CustomParameters.availabilityColor = Colors.greenAccent;
-    //     // CustomParameters.availabilityTitle = 'GO OFFLINE';
-    //     // isAvailable = true;
-    //   });
-    // }
   }
 
   ///Getting driver information
@@ -102,7 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
         if (snapshot.value["onlineStatus"] != null &&
             snapshot.value["onlineStatus"] == "online") {
           print("HomeTab- getCurrentDriverInfo Set isOnlineStatus =  True");
-          isOffline = false;
         }
         if (snapshot.value["earnings"] != null) {
           print("earnings ${snapshot.value["earnings"].toString()}");
@@ -167,6 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
         speed: 0,
         time: 10);
 
+    //Get Online status
+    var isOffline1 = await CommonService.getOnlineStatus(
+        CustomParameters.currentFirebaseUser.uid);
+    setState(() {
+      isOffline = isOffline1;
+      offLineOnline(isOffline);
+    });
+
     ///Need To Implement
     //await getCurrentDriverInfo(CustomParameters.currentPosition);
     CommonService.handleOnlineStatus(CustomParameters.currentFirebaseUser.uid);
@@ -228,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
-                  return loadingIndicators('Waiting for connection....');
+                  return loadingIndicators('Waiting for connection.... ');
                 case ConnectionState.waiting:
                   return loadingIndicators('Initializing....');
                 default:
@@ -351,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Expanded(
                                       child: SizedBox(),
                                     ),
-                                    myLocation(),
+                                    //myLocation(),
                                     SizedBox(
                                       height: 10,
                                     ),
@@ -371,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Expanded(
                                       child: SizedBox(),
                                     ),
-                                    myLocation(),
+                                    //myLocation(),
                                     SizedBox(
                                       height: 10,
                                     ),
@@ -392,8 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ///Handle online offline status factors /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*
   void offLineOnline(status) {
     if (status) {
-      //getLocationUpdates();
-      CustomParameters.isOnline = true;
+      getLocationUpdates();
       goOnline();
     } else {
       goOffline();
@@ -917,7 +912,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           CustomParameters.currentDriverInfo.fullName),
                       style: Theme.of(context).textTheme.headline6!.copyWith(
                             fontWeight: FontWeight.bold,
-                            fontSize: 17,
+                            fontSize: 15,
                             color: Theme.of(context).textTheme.headline6!.color,
                           ),
                     ),
@@ -926,6 +921,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           CustomParameters.currentDriverInfo.driverLevel),
                       style: Theme.of(context).textTheme.subtitle2!.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 15,
                             color: Theme.of(context).primaryColor,
                           ),
                     ),
@@ -938,9 +934,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
                     Text(
-                      '${CustomParameters.dailyParameters.commission > 1 ? CustomParameters.dailyParameters.commission : 0.00} LKR',
+                      '${CustomParameters.dailyParameters.commission > 1 ? CustomParameters.dailyParameters.commission.toStringAsFixed(2) : 0.00} LKR',
                       style: Theme.of(context).textTheme.headline6!.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 15,
                             color: Theme.of(context).textTheme.headline6!.color,
                           ),
                     ),
@@ -948,6 +945,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       AppLocalizations.of('Commission'),
                       style: Theme.of(context).textTheme.subtitle2!.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 15,
                             color: Theme.of(context).primaryColor,
                           ),
                     ),
@@ -1195,8 +1193,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // }
 
   Future seticonimage3(BuildContext context) async {
-    // ignore: unnecessary_null_comparison
-    // if (bitmapDescriptorStartLocation3 == null) {
     final ImageConfiguration imagesStartConfiguration3 =
         createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation3 = await BitmapDescriptor.fromAssetImage(
@@ -1204,12 +1200,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ConstanceData.mylocation3,
     );
     setState(() {});
-    // }
   }
 
   Future seticonimage2(BuildContext context) async {
-    // ignore: unnecessary_null_comparison
-    // if (bitmapDescriptorStartLocation2 == null) {
     final ImageConfiguration imagesStartConfiguration2 =
         createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation2 = await BitmapDescriptor.fromAssetImage(
@@ -1217,12 +1210,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ConstanceData.mylocation2,
     );
     setState(() {});
-    // }
   }
 
   Future seticonimage(BuildContext context) async {
-    // ignore: unnecessary_null_comparison
-    // if (bitmapDescriptorStartLocation == null) {
     final ImageConfiguration imagesStartConfiguration =
         createLocalImageConfiguration(context);
     bitmapDescriptorStartLocation = await BitmapDescriptor.fromAssetImage(
@@ -1230,7 +1220,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ConstanceData.mylocation1,
     );
     setState(() {});
-    // }
   }
 
   Widget offLineMode() {

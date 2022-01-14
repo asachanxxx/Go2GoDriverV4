@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -5,10 +7,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:my_cab_driver/constance/constance.dart';
 import 'package:my_cab_driver/drawer/drawer.dart';
 import 'package:my_cab_driver/models/CustomParameters.dart';
+import 'package:my_cab_driver/models/driverBalanceViewModel.dart';
 import 'package:my_cab_driver/wallet/paymentMethod.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
 import 'package:my_cab_driver/widgets/devider_widget.dart';
 import 'package:intl/intl.dart';
+
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class MyWallet extends StatefulWidget {
   @override
@@ -18,13 +25,13 @@ class MyWallet extends StatefulWidget {
 class _MyWalletState extends State<MyWallet> {
   var _scaffoldKey = new GlobalKey<ScaffoldState>();
   final f = new DateFormat('yyyy-MM-dd hh:mm');
-
+  double balance = 0.00;
+  var legerEntries;
+  var formatter = new DateFormat('dd-MM-yyyy');
   @override
   Widget build(BuildContext context) {
-
-
-    Widget returnControlMessage(String message1, String message2,
-        bool isError) {
+    Widget returnControlMessage(
+        String message1, String message2, bool isError) {
       return Container(
           width: double.infinity,
           child: Padding(
@@ -35,7 +42,9 @@ class _MyWalletState extends State<MyWallet> {
                   message1,
                   style: GoogleFonts.roboto(
                       fontSize: 15,
-                      color: isError ? Color(0xFFd32f2f) : Theme.of(context).primaryColor,
+                      color: isError
+                          ? Color(0xFFd32f2f)
+                          : Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
@@ -54,152 +63,279 @@ class _MyWalletState extends State<MyWallet> {
           ));
     }
 
+    // Future<bool> saveTrip() async {
+    //   Map bodyMap = {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"};
+    //   String url =
+    //       'https://go2goweb20220105044841.azurewebsites.net/api/Token/Authenticate';
+    //   var response = await http.post(Uri.parse(url),
+    //       headers: {"Content-Type": "application/json"},
+    //       body: jsonEncode(
+    //           {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"}));
+    //   print(
+    //       "response.statusCode  ${response.statusCode}  response.body ${response.body}");
+    //   String urlAddTrip =
+    //       "https://go2goweb20220105044841.azurewebsites.net/api/Trip/add-trip/";
+    //   //+CustomParameters.currentFirebaseUser.uid;
+    //   var responseLegderEntries = await http.post(Uri.parse(urlAddTrip),
+    //       headers: {
+    //         "Authorization": "Bearer ${response.body}",
+    //         "Content-Type": "application/json"
+    //       },
+    //       body: jsonEncode({
+    //         "fKey": "-Ms64Zk9ek37K7L9YTUM",
+    //         "driverKey": "7TJKl46iELTK8CFgpw5uNqjTy5z2",
+    //         "tripId": 0,
+    //         "tripNo": "",
+    //         "date": "2021-12-29T20:34:05.317Z",
+    //         "distance": 107,
+    //         "duration": 255,
+    //         "driverId": 10,
+    //         "commissionedDriverId": 2,
+    //         "commissionedDriverKey": "bjdbAv9XdpfRNFGvG3J4PhUBNpF3",
+    //         "vehicleType": 3,
+    //         "appPrice": 45,
+    //         "commission": 0,
+    //         "timePrice": 255,
+    //         "totalFare": 5650,
+    //         "kmPrice": 5350,
+    //         "companyPayable": 0,
+    //         "commissionApplicable": true
+    //       }));
 
-    var builderParam = StreamBuilder(
-        stream: FirebaseDatabase.instance
-            .reference()
-            .reference()
-            .child('drivers/${CustomParameters.currentFirebaseUser.uid}/paymentHistory')
-            .limitToLast(10)
-            .onValue, // async work
+    //   print(
+    //       "responseLegderEntries.statusCode  ${responseLegderEntries.statusCode}  responseLegderEntries.body ${responseLegderEntries.body}");
+    //   if (responseLegderEntries.statusCode == 200) {
+    //     return Future.value(true);
+    //   } else {
+    //     return Future.value(false);
+    //   }
+    // }
+
+    Future<bool> getDriverBalance() async {
+      Map bodyMap = {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"};
+      String url =
+          'https://go2goweb20220105044841.azurewebsites.net/api/Token/Authenticate';
+
+      var response = await http.post(Uri.parse(url),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(
+              {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"}));
+
+      print(
+          "response.statusCode  ${response.statusCode}  response.body ${response.body}");
+
+      String urlGetBal =
+          'https://go2goweb20220105044841.azurewebsites.net/api/UserLedger/get-ledger-balance-for-key/' +
+              CustomParameters.currentFirebaseUser.uid.trim();
+
+      print('Bearer ${response.body}');
+
+      var responsegetBal = await http.get(Uri.parse(urlGetBal),
+          headers: {"Authorization": "Bearer ${response.body}"});
+      print(
+          "responsegetBal.statusCode  ${responsegetBal.statusCode}  responsegetBal.body ${responsegetBal.body}");
+      if (responsegetBal.statusCode == 200 ||
+          responsegetBal.statusCode == 201) {
+        balance = jsonDecode(responsegetBal.body)["balance"];
+        return Future.value(true);
+      } else {
+        balance = 0.00;
+        return Future.value(false);
+      }
+    }
+
+    Future<bool> getLedgerEntries() async {
+      Map bodyMap = {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"};
+      String url =
+          'https://go2goweb20220105044841.azurewebsites.net/api/Token/Authenticate';
+
+      var response = await http.post(Uri.parse(url),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(
+              {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"}));
+
+      print(
+          "response.statusCode  ${response.statusCode}  response.body ${response.body}");
+      String urlGetLegderEntries =
+          "https://go2goweb20220105044841.azurewebsites.net/api/UserLedger/get-ledger-entries/" +
+              CustomParameters.currentFirebaseUser.uid;
+      var responseLegderEntries = await http.get(Uri.parse(urlGetLegderEntries),
+          headers: {"Authorization": "Bearer ${response.body}"});
+
+      print(
+          "responseLegderEntries.statusCode  ${responseLegderEntries.statusCode}  responseLegderEntries.body ${responseLegderEntries.body}");
+
+      if (responseLegderEntries.statusCode == 200 ||
+          responseLegderEntries.statusCode == 201) {
+        legerEntries = jsonDecode(responseLegderEntries.body);
+        return Future.value(true);
+      } else {
+        return Future.value(false);
+      }
+    }
+
+    String getFormatedDate(DateTime dateToFormat) {
+      var formatter = new DateFormat('dd-MM-yyyy HH-MM');
+      String formattedDate = "";
+      formattedDate = formatter.format(dateToFormat);
+      return formattedDate;
+    }
+
+    var builderBalance = FutureBuilder<bool>(
+        future: getDriverBalance(), // async work
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          Widget newwidget;
-          List<dynamic> list;
-          if (snapshot != null) {
-            if (snapshot.data != null) {
-              if (snapshot.data.snapshot != null) {
-                if (snapshot.data.snapshot.value != null) {
-                  if (snapshot.hasData) {
-                    newwidget = new Container(child: Text("Hello"),);
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.none:
-                        newwidget = Text("Loading......");
-                        break;
-                      default:
-                        Map<dynamic, dynamic> map = snapshot.data.snapshot
-                            .value;
-                        list = map.values.toList();
-                        print("rideBookingsdriverList snapshot list $list");
-                        newwidget = ListView.builder(
-                          itemCount: list.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            print(" rideBookingsdriverList ${list[index]}");
-                            var mType = list[index]["type"] != null
-                                ? list[index]["type"]
-                                : "Message";
-                            return
-                              Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Card(
-                                  shape:  new RoundedRectangleBorder(
-                                      side: new BorderSide(color: Theme.of(context).primaryColor, width: 1.0),
-                                      borderRadius: BorderRadius.circular(4.0)),
-                                  color: Color(0xFFfafafa),
-                                  child:Container(
-                                    color: Theme.of(context).scaffoldBackgroundColor,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child:
-                                      Column(
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Row(
-                                              children: <Widget>[
-                                                CircleAvatar(
-                                                  radius: 24,
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(40),
-                                                    child: Image.asset(
-                                                      ConstanceData.user5,
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: 16,
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      AppLocalizations.of(
-                                                          f.format(new DateTime.fromMillisecondsSinceEpoch(DateTime.parse(list[index]["date"]).microsecond*1000))
-                                                      ),
-                                                      style: Theme.of(context).textTheme.headline6!.copyWith(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: 15,
-                                                        color: Theme.of(context).textTheme.headline6!.color,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      '#6467488',
-                                                      style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Theme.of(context).disabledColor,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Expanded(child: SizedBox()),
-                                                Text(
-                                                  '\$25.00',
-                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).textTheme.headline6!.color,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            height: 0.5,
-                                            color: Theme.of(context).disabledColor,
-                                          ),
-                                        ],
-                                      ),
-
-                                    ),
-                                  ),
-                                ),
-                              );
-                          },
-                        );
-                        break;
-                    }
-                  } else {
-                    newwidget = Text("Loading......");
-                  }
-                } else {
-                  newwidget = returnControlMessage(
-                      "No Messages1", "No messages Found.", false);
-                }
-              } else {
-                newwidget = returnControlMessage(
-                    "No Messages2", "No messages Found.", false);
-              }
-            } else {
-              newwidget = returnControlMessage(
-                  "No Messages3", "No messages Found.", false);
-            }
-          } else {
-            newwidget = returnControlMessage(
-                "No Messages4", "No messages Found.", false);
+          if (snapshot.hasData) {
+            var newwidget = Text(
+              'LKR $balance',
+              style: Theme.of(context).textTheme.headline3!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: ConstanceData.secoundryFontColor,
+                  fontSize: 30),
+            );
+            return newwidget;
+          } else if (snapshot.hasError) {
+            return Text('${snapshot.error}');
           }
-          return newwidget;
-        }
-    );
+          return const CircularProgressIndicator();
+        });
 
+    var builderParam = FutureBuilder<bool>(
+        future: getLedgerEntries(), // async work
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            var dPrimaryColor = Color(0xFF455a64);
+            var dInfectedColor = Color(0xFFc2185b);
+            var dDeathColor = Color(0xFF212121);
 
-
-
-
+            return SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: FittedBox(
+                child: DataTable(
+                  sortColumnIndex: 0,
+                  sortAscending: true,
+                  columns: [
+                    DataColumn(
+                      label: Text(
+                        'Trip',
+                        style: TextStyle(
+                          color: dInfectedColor,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      numeric: false,
+                      tooltip: "Trip Id",
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Amount',
+                        style: TextStyle(
+                          color: dInfectedColor,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      numeric: true,
+                      tooltip: "Amount",
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Balance',
+                        style: TextStyle(
+                          color: dInfectedColor,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      numeric: true,
+                      tooltip: "Balance",
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Description',
+                        style: TextStyle(
+                          color: dInfectedColor,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                      numeric: false,
+                      tooltip: "Description",
+                    ),
+                  ],
+                  rows: legerEntries
+                      .map<DataRow>(
+                        (country) => DataRow(
+                          cells: [
+                            DataCell(
+                              Container(
+                                width: 10,
+                                child: Text(
+                                  country["tripId"].toString(),
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Container(
+                                width: 50,
+                                child: Text(
+                                  country["amount"].toString(),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Container(
+                                width: 50,
+                                child: Text(
+                                  country["balance"].toString(),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Container(
+                                width: 100,
+                                child: Text(
+                                  country["description"],
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Text('${snapshot.error}');
+          }
+          return Container(
+            height: 200,
+            child: Column(
+              children: [
+                SizedBox(
+                    width: 100.0,
+                    height: 100.0,
+                    child: const CircularProgressIndicator()),
+              ],
+            ),
+          );
+        });
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Theme.of(context).backgroundColor,
-      appBar:
-
-      AppBar(
+      appBar: AppBar(
         elevation: 0,
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
@@ -241,17 +377,16 @@ class _MyWalletState extends State<MyWallet> {
           ],
         ),
       ),
-
       drawer: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75 < 400 ? MediaQuery.of(context).size.width * 0.75 : 350,
+        width: MediaQuery.of(context).size.width * 0.75 < 400
+            ? MediaQuery.of(context).size.width * 0.75
+            : 350,
         child: Drawer(
           child: AppDrawer(
             selectItemName: 'Wallet',
           ),
         ),
       ),
-
-
       body: Stack(
         alignment: AlignmentDirectional.topCenter,
         children: <Widget>[
@@ -260,27 +395,18 @@ class _MyWalletState extends State<MyWallet> {
               Expanded(
                 flex: 1,
                 child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            border: Border.all(
-                              color: ConstanceData.secoundryFontColor,
-                            ),
-                          ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    border: Border.all(
+                      color: ConstanceData.secoundryFontColor,
+                    ),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.only(right: 14, left: 14),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text(
-                          '\$325.00',
-                          style: Theme.of(context).textTheme.headline3!.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: ConstanceData.secoundryFontColor,
-                              ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
+                        builderBalance,
                       ],
                     ),
                   ),
@@ -289,20 +415,22 @@ class _MyWalletState extends State<MyWallet> {
               Expanded(
                 flex: 1,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 14, left: 14, top: 23, bottom: 1),
+                  padding: const EdgeInsets.only(
+                      right: 14, left: 14, top: 10, bottom: 1),
                   child: Column(
                     children: <Widget>[
                       SizedBox(
-                        height: 35,
+                        height: 10,
                       ),
                       Row(
                         children: <Widget>[
                           Text(
                             AppLocalizations.of('PAYMENT HISTORY'),
-                            style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).disabledColor,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.subtitle2!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).disabledColor,
+                                    ),
                           ),
                         ],
                       ),
@@ -311,16 +439,15 @@ class _MyWalletState extends State<MyWallet> {
                 ),
               ),
               Expanded(
-                flex: 5,
-                child:Padding(
+                flex: 9,
+                child: Padding(
                   padding: EdgeInsets.only(right: 14, left: 14, bottom: 16),
                   child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: builderParam
-                  ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: builderParam),
                 ),
               ),
             ],
@@ -330,57 +457,6 @@ class _MyWalletState extends State<MyWallet> {
               Expanded(
                 flex: 2,
                 child: SizedBox(),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 40, left: 40),
-                child: InkWell(
-                  highlightColor: Colors.transparent,
-                  splashColor: Colors.transparent,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PaymentMethod(),
-                      ),
-                    );
-                  },
-                  child: Card(
-                    elevation: 8,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Row(
-                        children: <Widget>[
-                          CircleAvatar(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            radius: 24,
-                            child: Icon(
-                              FontAwesomeIcons.dollarSign,
-                              color: ConstanceData.secoundryFontColor,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 16,
-                          ),
-                          Text(
-                            AppLocalizations.of('Payment method'),
-                            style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.headline6!.color,
-                                ),
-                          ),
-                          Expanded(
-                            child: SizedBox(),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Theme.of(context).disabledColor,
-                            size: 18,
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ),
               Expanded(
                 child: SizedBox(),

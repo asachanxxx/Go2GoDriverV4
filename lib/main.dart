@@ -21,6 +21,7 @@ import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/notification/tripbooking.dart';
 import 'package:my_cab_driver/setting/settingScreen.dart';
 import 'package:wakelock/wakelock.dart';
+import 'Services/commonService.dart';
 import 'appTheme.dart';
 import 'auth/signUpScreen.dart';
 import 'history/historyScreen.dart';
@@ -36,16 +37,6 @@ import 'constance/constance.dart' as constance;
 /// call.
 /// To verify things are working, check out the native platform logs.
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  // await Firebase.initializeApp(
-  //     options: const FirebaseOptions(
-  //       appId: '1:151650714439:android:d4df71ac0251690d63c262',
-  //       apiKey: 'AIzaSyAZENrJd5IZp7sISusn7UTuHiwx14yRtws',
-  //       messagingSenderId: '297855924061',
-  //       projectId: 'go2go-dev-5534c',
-  //       databaseURL: 'https://go2go-dev-5534c-default-rtdb.asia-southeast1.firebasedatabase.app',
-  //     ));
   print('Handling a background message ${message.messageId}');
 }
 
@@ -175,8 +166,6 @@ class _MyAppState extends State<MyApp> {
     } else {
       Firebase.app();
     }
-    print("Point  _initialization = $_initialization");
-    //await handleInitializeEvents();
     var currentRouteName = await handleInitializeEvents();
     print("Point currentRouteName $currentRouteName");
     return currentRouteName;
@@ -295,7 +284,7 @@ class _MyAppState extends State<MyApp> {
     Routes.USERBLOCK: (BuildContext context) => new UserStatusBlockScreen(),
     Routes.USERPENDING: (BuildContext context) => new UserStatusPendingScreen(),
     Routes.TRIPBOOKING: (BuildContext context) => new BookingScreen(),
-    Routes.RIDETEST:(BuildContext context) => new RiderList(),
+    Routes.RIDETEST: (BuildContext context) => new RiderList(),
   };
 }
 

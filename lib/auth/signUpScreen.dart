@@ -36,7 +36,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    appBarheight = AppBar().preferredSize.height + MediaQuery.of(context).padding.top;
+    appBarheight =
+        AppBar().preferredSize.height + MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       body: InkWell(
@@ -81,7 +82,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                   duration: Duration(milliseconds: 700),
                                   cycles: 1,
-                                  builder: (context, animate, _) => SlideTransition(
+                                  builder: (context, animate, _) =>
+                                      SlideTransition(
                                     position: animate.animation,
                                     child: Image.asset(
                                       ConstanceData.splashBackground,
@@ -91,37 +93,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 20, left: 18, right: 18),
+                                  padding: const EdgeInsets.only(
+                                      top: 20, left: 18, right: 18),
                                   child: Column(
                                     children: <Widget>[
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
                                           Text(
                                             AppLocalizations.of('Go2Go'),
-                                            style: Theme.of(context).textTheme.headline4!.copyWith(
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline4!
+                                                .copyWith(
                                                   fontWeight: FontWeight.bold,
-                                                  color: ConstanceData.secoundryFontColor,
+                                                  color: ConstanceData
+                                                      .secoundryFontColor,
                                                 ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(top: 10),
+                                            padding:
+                                                const EdgeInsets.only(top: 10),
                                             child: Text(
                                               AppLocalizations.of(' Driver'),
-                                              style: Theme.of(context).textTheme.headline5!.copyWith(
-                                                    color: ConstanceData.secoundryFontColor,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline5!
+                                                  .copyWith(
+                                                    color: ConstanceData
+                                                        .secoundryFontColor,
                                                   ),
                                             ),
                                           ),
                                         ],
                                       ),
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
                                           Text(
-                                            AppLocalizations.of(' Sign in with e-mail'),
-                                            style: Theme.of(context).textTheme.headline5!.copyWith(
-                                                  color: ConstanceData.secoundryFontColor,
+                                            AppLocalizations.of(
+                                                ' Sign in with e-mail'),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline5!
+                                                .copyWith(
+                                                  color: ConstanceData
+                                                      .secoundryFontColor,
                                                 ),
                                           ),
                                         ],
@@ -142,27 +161,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Container(
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                                    border: Border.all(color: Theme.of(context).dividerColor),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    border: Border.all(
+                                        color: Theme.of(context).dividerColor),
                                     color: Theme.of(context).backgroundColor,
                                   ),
                                   child: TextFormField(
+                                    inputFormatters: [
+                                      new LengthLimitingTextInputFormatter(25),
+                                    ],
                                     controller: fullNameController,
                                     autofocus: true,
-                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                      color: Theme.of(context).textTheme.headline6!.color,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
+                                        ),
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
                                       hintText: 'Full Name',
                                       prefixIcon: Icon(
                                         Icons.drive_file_rename_outline,
                                         size: 20,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
-                                      hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                          color: Theme.of(context).textTheme.headline1!.color
-                                      ),
+                                      hintStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2!
+                                          .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .headline1!
+                                                  .color),
                                       border: InputBorder.none,
                                     ),
                                   ),
@@ -173,8 +211,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Container(
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                                    border: Border.all(color: Theme.of(context).dividerColor),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    border: Border.all(
+                                        color: Theme.of(context).dividerColor),
                                     color: Theme.of(context).backgroundColor,
                                   ),
                                   child: TextFormField(
@@ -184,20 +224,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           RegExp(r'[A-Za-z@.0-9]')),
                                     ],
                                     autofocus: true,
-                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                      color: Theme.of(context).textTheme.headline6!.color,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
+                                        ),
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
                                       hintText: 'E-Mail',
                                       prefixIcon: Icon(
                                         Icons.email,
                                         size: 20,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
-                                      hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                          color: Theme.of(context).textTheme.headline1!.color
-                                      ),
+                                      hintStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2!
+                                          .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .headline1!
+                                                  .color),
                                       border: InputBorder.none,
                                     ),
                                   ),
@@ -208,8 +262,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Container(
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                                    border: Border.all(color: Theme.of(context).dividerColor),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    border: Border.all(
+                                        color: Theme.of(context).dividerColor),
                                     color: Theme.of(context).backgroundColor,
                                   ),
                                   child: TextFormField(
@@ -219,20 +275,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           RegExp(r'[0-9]')),
                                     ],
                                     autofocus: true,
-                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                      color: Theme.of(context).textTheme.headline6!.color,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
+                                        ),
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
                                       hintText: 'Mobile No',
                                       prefixIcon: Icon(
                                         Icons.mobile_friendly,
                                         size: 20,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
-                                      hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                          color: Theme.of(context).textTheme.headline1!.color
-                                      ),
+                                      hintStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2!
+                                          .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .headline1!
+                                                  .color),
                                       border: InputBorder.none,
                                     ),
                                   ),
@@ -243,27 +313,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Container(
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                                    border: Border.all(color: Theme.of(context).dividerColor),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    border: Border.all(
+                                        color: Theme.of(context).dividerColor),
                                     color: Theme.of(context).backgroundColor,
                                   ),
                                   child: TextFormField(
                                     controller: passwordContoller,
                                     autofocus: true,
-                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                      color: Theme.of(context).textTheme.headline6!.color,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
+                                        ),
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
                                       hintText: 'Password',
                                       prefixIcon: Icon(
                                         Icons.vpn_key_sharp,
                                         size: 20,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
-                                      hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                          color: Theme.of(context).textTheme.headline1!.color
-                                      ),
+                                      hintStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2!
+                                          .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .headline1!
+                                                  .color),
                                       border: InputBorder.none,
                                     ),
                                   ),
@@ -274,32 +360,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Container(
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                                    border: Border.all(color: Theme.of(context).dividerColor),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    border: Border.all(
+                                        color: Theme.of(context).dividerColor),
                                     color: Theme.of(context).backgroundColor,
                                   ),
                                   child: TextFormField(
                                     controller: nicContoller,
                                     autofocus: true,
-                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                      color: Theme.of(context).textTheme.headline6!.color,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2!
+                                        .copyWith(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .headline6!
+                                              .color,
+                                        ),
                                     keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
                                       hintText: 'ID Card No',
                                       prefixIcon: Icon(
                                         Icons.card_membership,
                                         size: 20,
-                                        color: Theme.of(context).textTheme.headline6!.color,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .headline6!
+                                            .color,
                                       ),
-                                      hintStyle: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                          color: Theme.of(context).textTheme.headline1!.color
-                                      ),
+                                      hintStyle: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2!
+                                          .copyWith(
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .headline1!
+                                                  .color),
                                       border: InputBorder.none,
                                     ),
                                   ),
                                 ),
-
                                 SizedBox(
                                   height: 36,
                                 ),
@@ -308,20 +409,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   splashColor: Colors.transparent,
                                   onTap: () async {
                                     await registerDriver(context);
-
                                   },
                                   child: Container(
                                     height: 40,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10),
-                                      color: Theme.of(context).textTheme.headline6!.color,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .headline6!
+                                          .color,
                                     ),
                                     child: Center(
                                       child: Text(
                                         AppLocalizations.of('NEXT'),
-                                        style: Theme.of(context).textTheme.button!.copyWith(
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .button!
+                                            .copyWith(
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).scaffoldBackgroundColor,
+                                              color: Theme.of(context)
+                                                  .scaffoldBackgroundColor,
                                             ),
                                       ),
                                     ),
@@ -342,7 +449,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Text(
                           AppLocalizations.of('Already have an account?'),
                           style: Theme.of(context).textTheme.button!.copyWith(
-                                color: Theme.of(context).textTheme.headline6!.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .headline6!
+                                    .color,
                               ),
                         ),
                         InkWell(
@@ -359,7 +469,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: Text(
                             AppLocalizations.of(' Sign In'),
                             style: Theme.of(context).textTheme.button!.copyWith(
-                                  color: Theme.of(context).textTheme.headline6!.color,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .headline6!
+                                      .color,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
@@ -379,17 +492,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  showAlert(context , message){
+  showAlert(context, message) {
     Alert(
-
       context: context,
       type: AlertType.error,
       title: "Go2Go Messaging",
       desc: message,
       style: AlertStyle(
           descStyle: TextStyle(fontSize: 15),
-          titleStyle: TextStyle(color: Color(0xFFEB1465))
-      ) ,
+          titleStyle: TextStyle(color: Color(0xFFEB1465))),
       buttons: [
         DialogButton(
           child: Text(
@@ -403,19 +514,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ).show();
   }
 
-  registerDriver(context) async{
+  registerDriver(context) async {
     bool emailValid = RegExp(
-        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
         .hasMatch(emailContoller.text);
-    var connectivity =
-        await Connectivity().checkConnectivity();
+    var connectivity = await Connectivity().checkConnectivity();
     if (connectivity != ConnectivityResult.mobile &&
         connectivity != ConnectivityResult.wifi) {
-      print('It seems you are offline.(කරුණාකර ඔබගේ දුරකතනයේ අන්තර්ජාල සම්බන්දතාවය පන ගන්වන්න)');
+      print(
+          'It seems you are offline.(කරුණාකර ඔබගේ දුරකතනයේ අන්තර්ජාල සම්බන්දතාවය පන ගන්වන්න)');
       return;
     }
     if (fullNameController.text.length < 8) {
-      showAlert(context,'Full name must be more than 3 characters.(සම්පූර්ණ නම අක්ෂර 8 ට වඩා වැඩි විය යුතුය.)');
+      showAlert(context,
+          'Full name must be more than 3 characters.(සම්පූර්ණ නම අක්ෂර 8 ට වඩා වැඩි විය යුතුය.)');
       return;
     }
     if (!emailValid) {
@@ -440,8 +552,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    registerUser(emailContoller.text,
-        passwordContoller.text);
+    registerUser(emailContoller.text, passwordContoller.text);
 
     Navigator.push(
       context,
@@ -450,7 +561,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
-
 
   bool isNicValid(String nic) {
     print("nic: - $nic  Length : ${nic.length}");
@@ -468,7 +578,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-          email: emailContoller.text, password: passwordContoller.text);
+              email: emailContoller.text, password: passwordContoller.text);
 
       DatabaseReference newuser = FirebaseDatabase.instance
           .reference()
@@ -537,7 +647,4 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
     return newString;
   }
-
-
-
 }

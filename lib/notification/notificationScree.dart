@@ -19,10 +19,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
-    Widget returnControlMessage(String message1, String message2,
-        bool isError) {
+    Widget returnControlMessage(
+        String message1, String message2, bool isError) {
       return Container(
           width: double.infinity,
           child: Padding(
@@ -56,7 +54,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         stream: FirebaseDatabase.instance
             .reference()
             .reference()
-            .child('rideBookingsdriverList/${CustomParameters.currentFirebaseUser.uid}').orderByChild("accepted").equalTo(false)
+            .child(
+                'rideBookingsdriverList/${CustomParameters.currentFirebaseUser.uid}')
+            .orderByChild("accepted")
+            .equalTo(false)
             .limitToLast(10)
             .onValue, // async work
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -67,14 +68,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
               if (snapshot.data.snapshot != null) {
                 if (snapshot.data.snapshot.value != null) {
                   if (snapshot.hasData) {
-                    newwidget = new Container(child: Text("Hello"),);
+                    newwidget = new Container(
+                      child: Text("Hello"),
+                    );
                     switch (snapshot.connectionState) {
                       case ConnectionState.none:
                         newwidget = Text("Loading......");
                         break;
                       default:
-                        Map<dynamic, dynamic> map = snapshot.data.snapshot
-                            .value;
+                        Map<dynamic, dynamic> map =
+                            snapshot.data.snapshot.value;
                         list = map.values.toList();
                         print("rideBookingsdriverList snapshot list $list");
                         newwidget = ListView.builder(
@@ -84,143 +87,239 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             var mType = list[index]["type"] != null
                                 ? list[index]["type"]
                                 : "Message";
-                            return
-                              Padding(
+                            return Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Card(
-                                shape:  new RoundedRectangleBorder(
-                                    side: new BorderSide(color: Theme.of(context).primaryColor, width: 1.0),
+                                shape: new RoundedRectangleBorder(
+                                    side: new BorderSide(
+                                        color: Theme.of(context).primaryColor,
+                                        width: 1.0),
                                     borderRadius: BorderRadius.circular(4.0)),
                                 color: Color(0xFFfafafa),
-                                child:Container(
-                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                child: Container(
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
-                                    child:
-
-                                    Row(
+                                    child: Row(
                                       children: <Widget>[
                                         CircleAvatar(
-                                          backgroundColor: Theme.of(context).primaryColor,
+                                          backgroundColor:
+                                              Theme.of(context).primaryColor,
                                           radius: 24,
                                           child: Icon(
                                             Icons.check_circle,
-                                            color: Theme.of(context).backgroundColor,
+                                            color: Theme.of(context)
+                                                .backgroundColor,
                                           ),
                                         ),
                                         SizedBox(
                                           width: 16,
                                         ),
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: <Widget>[
                                             Row(
-                                              children:<Widget> [
-                                                Text("From",
-                                                    style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Theme.of(context).primaryColor,
-                                                    ),
+                                              children: <Widget>[
+                                                Text(
+                                                  "From",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .primaryColor,
+                                                      ),
                                                 ),
-                                                SizedBox(width: 5,),
-                                                Text(list[index]["PickUp"]["placeName"],
-                                                    style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Theme.of(context).textTheme.headline6!.color,
-                                                    ),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  list[index]["PickUp"]
+                                                      ["placeName"],
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .headline6!
+                                                            .color,
+                                                      ),
                                                 )
                                               ],
                                             ),
                                             Row(
-                                              children:<Widget> [
-                                                Text("To     ",
-                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).primaryColor,
-                                                  ),
+                                              children: <Widget>[
+                                                Text(
+                                                  "To     ",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .primaryColor,
+                                                      ),
                                                 ),
-                                                SizedBox(width: 5,),
-                                                Text(list[index]["Drop"]["placeName"],
-                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).textTheme.headline6!.color,
-                                                  ),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  list[index]["Drop"]
+                                                      ["placeName"],
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .headline6!
+                                                            .color,
+                                                      ),
                                                 )
                                               ],
                                             ),
                                             Row(
-                                              children:<Widget> [
-                                                Text("Time ",
-                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).primaryColor,
-                                                  ),
+                                              children: <Widget>[
+                                                Text(
+                                                  "Time ",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .primaryColor,
+                                                      ),
                                                 ),
-                                                SizedBox(width: 5,),
-                                                Text("${list[index]["tripDate"]["year"]}/${list[index]["tripDate"]["month"]}/${list[index]["tripDate"]["day"]} ${list[index]["triptime"]["hour"]}:${list[index]["triptime"]["minutes"]} PM",
-                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).textTheme.headline6!.color,
-                                                  ),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  "${list[index]["tripDate"]["year"]}/${list[index]["tripDate"]["month"]}/${list[index]["tripDate"]["day"]} ${list[index]["triptime"]["hour"]}:${list[index]["triptime"]["minutes"]} PM",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .headline6!
+                                                            .color,
+                                                      ),
                                                 )
                                               ],
                                             ),
                                             Row(
-                                              children:<Widget> [
-                                                Text("UpAndDown ",
-                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).primaryColor,
-                                                  ),
+                                              children: <Widget>[
+                                                Text(
+                                                  "UpAndDown ",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .primaryColor,
+                                                      ),
                                                 ),
-                                                SizedBox(width: 5,),
-                                                Text("${list[index]["upAndDown"] == true ? 'Yes' : 'No'}",
-                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).textTheme.headline6!.color,
-                                                  ),
+                                                SizedBox(
+                                                  width: 5,
                                                 ),
-                                                SizedBox(width: 5,),
-                                                Text("Trip For ",
-                                                  style: Theme.of(context).textTheme.bodyText2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).primaryColor,
-                                                  ),
+                                                Text(
+                                                  "${list[index]["upAndDown"] == true ? 'Yes' : 'No'}",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .headline6!
+                                                            .color,
+                                                      ),
                                                 ),
-                                                SizedBox(width: 5,),
-                                                Text("${list[index]["tripMethod"] == 'passenger' ? 'Passenger' : 'Delivery'}",
-                                                  style: Theme.of(context).textTheme.subtitle2!.copyWith(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).textTheme.headline6!.color,
-                                                  ),
+                                                SizedBox(
+                                                  width: 5,
                                                 ),
-
+                                                Text(
+                                                  "Trip For ",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  "${list[index]["tripMethod"] == 'passenger' ? 'Passenger' : 'Delivery'}",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subtitle2!
+                                                      .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .textTheme
+                                                            .headline6!
+                                                            .color,
+                                                      ),
+                                                ),
                                               ],
                                             ),
                                             SizedBox(
                                               height: 5,
                                             ),
                                             InkWell(
-                                              highlightColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
                                               splashColor: Colors.transparent,
                                               onTap: () async {
-                                                acceptBooking(list[index]["bookingId"]);
-
+                                                acceptBooking(
+                                                    list[index]["bookingId"]);
                                               },
                                               child: Container(
                                                 height: 30,
                                                 width: 100,
                                                 decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(10),
-                                                  color: Theme.of(context).primaryColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  color: Theme.of(context)
+                                                      .primaryColor,
                                                 ),
                                                 child: Center(
                                                   child: Text(
-                                                    AppLocalizations.of('Accept'),
-                                                    style: Theme.of(context).textTheme.button!.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Theme.of(context).scaffoldBackgroundColor,
-                                                    ),
+                                                    AppLocalizations.of(
+                                                        'Accept'),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .button!
+                                                        .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Theme.of(
+                                                                  context)
+                                                              .scaffoldBackgroundColor,
+                                                        ),
                                                   ),
                                                 ),
                                               ),
@@ -242,39 +341,45 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   }
                 } else {
                   newwidget = returnControlMessage(
-                      "No Messages1", "No messages Found.", false);
+                      "No Trip Requests",
+                      "There are no trip requests found to accept.( සංචාර ඉල්ලීම් කිසිවක් නැත .)",
+                      false);
                 }
               } else {
                 newwidget = returnControlMessage(
-                    "No Messages2", "No messages Found.", false);
+                    "No Trip Requests",
+                    "There are no trip requests found to accept.( සංචාර ඉල්ලීම් කිසිවක් නැත .)",
+                    false);
               }
             } else {
               newwidget = returnControlMessage(
-                  "No Messages3", "No messages Found.", false);
+                  "No Trip Requests",
+                  "There are no trip requests found to accept.( සංචාර ඉල්ලීම් කිසිවක් නැත .)",
+                  false);
             }
           } else {
             newwidget = returnControlMessage(
-                "No Messages4", "No messages Found.", false);
+                "No Trip Requests",
+                "There are no trip requests found to accept.( සංචාර ඉල්ලීම් කිසිවක් නැත .)",
+                false);
           }
           return newwidget;
-        }
-    );
-
+        });
 
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       key: _scaffoldKey,
       drawer: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75 < 400 ? MediaQuery.of(context).size.width * 0.75 : 350,
+        width: MediaQuery.of(context).size.width * 0.75 < 400
+            ? MediaQuery.of(context).size.width * 0.75
+            : 350,
         child: Drawer(
           child: AppDrawer(
             selectItemName: 'Notification',
           ),
         ),
       ),
-      appBar:
-
-      AppBar(
+      appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
         title: Row(
@@ -315,12 +420,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ],
         ),
       ),
-      body:
-      Column(
+      body: Column(
         children: <Widget>[
-          Expanded(
-            child: builderParam
-          ),
+          Expanded(child: builderParam),
           SizedBox(
             height: MediaQuery.of(context).padding.bottom + 16,
           )
@@ -331,28 +433,30 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   void acceptBooking(String bookingID) async {
     print("acceptBooking bookingID: $bookingID");
-    DatabaseReference instance = FirebaseDatabase.instance.reference().child(
-        'rideBookings/$bookingID/drivers');
+    DatabaseReference instance = FirebaseDatabase.instance
+        .reference()
+        .child('rideBookings/$bookingID/drivers');
     instance.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         var drivers = snapshot.value;
         snapshot.value.forEach((snapshot) {
-          print("accStatus $snapshot Driver ID ${CustomParameters.currentFirebaseUser.uid}");
-          DatabaseReference instanceX1 = FirebaseDatabase.instance.reference()
-              .child(
-              'rideBookingsdriverList/$snapshot/$bookingID');
+          print(
+              "accStatus $snapshot Driver ID ${CustomParameters.currentFirebaseUser.uid}");
+          DatabaseReference instanceX1 = FirebaseDatabase.instance
+              .reference()
+              .child('rideBookingsdriverList/$snapshot/$bookingID');
           instanceX1.remove();
         });
       }
     });
 
-    DatabaseReference instanceBase = FirebaseDatabase.instance.reference()
-        .child('rideBookings/$bookingID/');
+    DatabaseReference instanceBase =
+        FirebaseDatabase.instance.reference().child('rideBookings/$bookingID/');
     instanceBase.child("status").set("Accepted");
-    instanceBase.child("AcceptedDriver").set(CustomParameters.currentFirebaseUser.uid);
-
+    instanceBase
+        .child("AcceptedDriver")
+        .set(CustomParameters.currentFirebaseUser.uid);
   }
-
 }
 
 

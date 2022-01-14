@@ -1,6 +1,7 @@
 // ignore_for_file: unnecessary_statements
-
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'dart:math';
 
@@ -1439,10 +1440,59 @@ class _PickupScreenState extends State<PickupScreen> {
     }
   }
 
+  Future<bool> saveTrip(
+      TripDetails tripDetailsx, DirectionDetails directionDetailsGPS) async {
+    Map bodyMap = {"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"};
+    String url =
+        'https://go2goweb20220105044841.azurewebsites.net/api/Token/Authenticate';
+    var response = await http.post(Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body:
+            jsonEncode({"userName": "Asanga", "password": "(z^yP{AHwe2?f}-c"}));
+    print(
+        "response.statusCode  ${response.statusCode}  response.body ${response.body}");
+    String urlAddTrip =
+        "https://go2goweb20220105044841.azurewebsites.net/api/Trip/add-trip/";
+    var responseLegderEntries = await http.post(Uri.parse(urlAddTrip),
+        headers: {
+          "Authorization": "Bearer ${response.body}",
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode({
+          "fKey": tripDetailsx.rideID,
+          "driverKey": CustomParameters.currentFirebaseUser.uid,
+          "tripId": 0,
+          "tripNo": "",
+          "date": "2021-12-29T20:34:05.317Z",
+          "distance": directionDetailsGPS.distanceValue,
+          "duration": directionDetailsGPS.durationValue,
+          "driverId": 0,
+          "commissionedDriverId": 2,
+          "commissionedDriverKey": tripDetailsx.commissionedDriverId,
+          "vehicleType": 3,
+          "appPrice": CustomParameters.paymentDetails.appPrice,
+          "commission": 0,
+          "timePrice": CustomParameters.paymentDetails.timePrice,
+          "totalFare": CustomParameters.paymentDetails.totalFare,
+          "kmPrice": CustomParameters.paymentDetails.kmPrice,
+          "companyPayable": 0,
+          "commissionApplicable": true
+        }));
+    print(
+        "responseLegderEntries.statusCode  ${responseLegderEntries.statusCode}  responseLegderEntries.body ${responseLegderEntries.body}");
+    if (responseLegderEntries.statusCode == 200) {
+      return Future.value(true);
+    } else {
+      return Future.value(false);
+    }
+  }
+
   void driverPaymentHistory(
       TripDetails tripDetailsx,
       DirectionDetails directionDetails,
       DirectionDetails directionDetailsGPS) async {
+    var saved = await saveTrip(tripDetailsx, directionDetailsGPS);
+
     print(
         "inside driverTripHistory ${CustomParameters.currentFirebaseUser.uid}");
     DatabaseReference earningsRef = FirebaseDatabase.instance.reference().child(
@@ -1494,9 +1544,20 @@ class _PickupScreenState extends State<PickupScreen> {
       "destinationAddress":
           tripDetailsx != null ? tripDetailsx.destinationAddress : "",
       "directionDetails": directionMap,
-      "directionDetailsGoogle": directionMapGoogle
+      "directionDetailsGoogle": directionMapGoogle,
+      "saved": saved
     };
     earningsRef.set(paymentHistoryMap);
+
+    Map dailyFinanceMap = {
+      'earning': CustomParameters.paymentDetails.kmPrice +
+          CustomParameters.paymentDetails.timePrice,
+      'commission': CustomParameters.paymentDetails.commission,
+      'driveHours': directionDetails.durationValue,
+      'totalDistance': directionDetails.distanceValue,
+      'totalTrips': 1,
+    };
+    FinanceService.handleDailyFinance(dailyFinanceMap);
 
     var summary = DateWiseSummary(
         CustomParameters.paymentDetails.commission,
@@ -1512,14 +1573,6 @@ class _PickupScreenState extends State<PickupScreen> {
     var cf = CashFlows(CustomParameters.paymentDetails.companyPayable, 0);
     await FinanceService.updateCashFlows(cf);
 
-    // await SalesService.updateEarningOnly(paymentDetails.kmPrice + paymentDetails.timePrice);
-    // if(paymentDetails.commissionApplicable){
-    //   await SalesService.updateCommissionOnly(paymentDetails.commission);
-    // }
-    // await SalesService.updateKMs(directionDetails.distanceValue/1000);
-    // await SalesService.updateKMs(directionDetails.durationValue/60);
-
-    ///Driver's own Accounting REF
     DatabaseReference journalsRef = FirebaseDatabase.instance
         .reference()
         .child(

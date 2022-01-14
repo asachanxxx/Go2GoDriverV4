@@ -9,6 +9,7 @@ import 'package:my_cab_driver/models/CustomParameters.dart';
 import 'package:my_cab_driver/models/TripDetails.dart';
 import 'package:my_cab_driver/pickup/pickupScreen.dart';
 import 'package:my_cab_driver/widgets/devider_widget.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import '../appTheme.dart';
 import 'package:my_cab_driver/Language/appLocalizations.dart';
 import 'package:intl/intl.dart';
@@ -56,9 +57,6 @@ class _NotificationScreenState extends State<BookingScreen> {
             ),
           ));
     }
-
-    print(
-        "CustomParameters.currentFirebaseUser.uid ${CustomParameters.currentFirebaseUser.uid}");
 
     var builderParam = StreamBuilder(
         stream: FirebaseDatabase.instance
@@ -302,21 +300,8 @@ class _NotificationScreenState extends State<BookingScreen> {
                                                   Colors.transparent,
                                               splashColor: Colors.transparent,
                                               onTap: () async {
-                                                await _checkPermissions();
-                                                if (_permissionGranted !=
-                                                    PermissionStatus.granted) {
-                                                  await _requestPermission();
-                                                }
-                                                await _checkService();
-                                                if (_serviceEnabled != true) {
-                                                  await _requestService();
-                                                }
-                                                location.enableBackgroundMode(
-                                                    enable: true);
-
-                                                print("list ${list[index]}");
-                                                acceptBooking(
-                                                    context, list[index]);
+                                                showAlertDialog(
+                                                    context, list, index);
                                               },
                                               child: Container(
                                                 height: 30,
@@ -444,6 +429,54 @@ class _NotificationScreenState extends State<BookingScreen> {
     );
   }
 
+  showAlertDialog(BuildContext context, list, index) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("Cancel"),
+      onPressed: () {
+        print("Cancelled");
+        Navigator.pop(context);
+      },
+    );
+    Widget continueButton = TextButton(
+      child: Text("Continue"),
+      onPressed: () async {
+        print("Continue");
+
+        await _checkPermissions();
+        if (_permissionGranted != PermissionStatus.granted) {
+          await _requestPermission();
+        }
+        await _checkService();
+        if (_serviceEnabled != true) {
+          await _requestService();
+        }
+        location.enableBackgroundMode(enable: true);
+
+        print("list ${list[index]}");
+        acceptBooking(context, list[index]);
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Go2Go Messaging"),
+      content: Text("Do you want to start the booked trip?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   void acceptBooking(context, dynamic rideList) async {
     ///need to calculate initial fires for the ride or we can calculate it and save in the booking
     /// need to get the Rider phone number and the Name
@@ -522,12 +555,13 @@ class _NotificationScreenState extends State<BookingScreen> {
 
     if (acceptedDriver != "system") {
       tripDetails.commissionedDriverId =
-          rideList["requestedDriver"].toString().trim();
+          rideList["requestedDriverId"].toString().trim();
       tripDetails.commissionApplicable = true;
     } else {
       tripDetails.commissionedDriverId = "system";
       tripDetails.commissionApplicable = false;
     }
+    Navigator.pop(context);
     print(
         "tripDetails.commissionedDriverId = ${tripDetails.commissionedDriverId} tripDetails.commissionApplicable = ${tripDetails.commissionApplicable}");
     Navigator.push(

@@ -16,6 +16,18 @@ import 'package:http/http.dart' as http;
 import 'package:my_cab_driver/widgets/wgt_progressdialog.dart';
 
 class CommonService {
+  static Future<bool> getOnlineStatus(String driverKey) async {
+    var checkRef = await FirebaseDatabase.instance
+        .reference()
+        .child("driversAvailable/$driverKey/")
+        .once();
+    if (checkRef.value != null) {
+      print("checkRef.value ${checkRef.value}");
+      return true;
+    }
+    return false;
+  }
+
   Future<List<VType>?> getVehicleTypeInfo() async {
     var checkRef = await FirebaseDatabase.instance
         .reference()
@@ -274,14 +286,14 @@ class CommonService {
             .singleWhere((element) => element.name.trim() == "Type1");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
       } else if (vehicleType == "Type2") {
         // Flex-Nano
         tukObject = CustomParameters.globalVTypes
             .singleWhere((element) => element.name.trim() == "Type2");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
       } else if (vehicleType == "Type3") {
@@ -291,7 +303,7 @@ class CommonService {
             .singleWhere((element) => element.name.trim() == "Type3");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
       } else if (vehicleType == "Type4") {
@@ -300,7 +312,7 @@ class CommonService {
             .singleWhere((element) => element.name.trim() == "Type4");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
       } else if (vehicleType == "Type5") {
@@ -309,7 +321,7 @@ class CommonService {
             .singleWhere((element) => element.name.trim() == "Type5");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
         print(
             "vehicleType tukObject.baseFare = ${tukObject.baseFare} \n details.distanceValue = ${details.distanceValue} \n tukObject.perKM = ${tukObject.perKM} \n details.durationValue = ${details.durationValue} \n tukObject.minutePrice = ${tukObject.minutePrice}");
       } else if (vehicleType == "Type6") {
@@ -318,14 +330,14 @@ class CommonService {
             .singleWhere((element) => element.name.trim() == "Type6");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
       } else if (vehicleType == "Type7") {
         // Van
         tukObject = CustomParameters.globalVTypes
             .singleWhere((element) => element.name.trim() == "Type7");
         baseFire = tukObject.baseFare;
         distanceFire = applyFireLogic(details.distanceValue, tukObject.perKM);
-        timeFire = (details.durationValue / 60) * tukObject.minutePrice;
+        timeFire = details.durationValue * tukObject.minutePrice;
       }
 
       double totalFire = baseFire + distanceFire + timeFire;
@@ -377,8 +389,9 @@ class CommonService {
   }
 
   static double applyFireLogic(int kms, double kmPrice) {
-    //var disKms = kms/1000;
-    if (kms <= 4) {
+    var minKm = CustomParameters.systemSettings.minimumKM;
+
+    if (kms <= minKm) {
       return kmPrice * 4;
     } else {
       return (kms) * kmPrice;

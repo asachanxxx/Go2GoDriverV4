@@ -54,9 +54,9 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
             Text(
               AppLocalizations.of('Add new customer'),
               style: Theme.of(context).textTheme.headline6!.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).backgroundColor,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).backgroundColor,
+                  ),
             ),
             SizedBox(),
           ],
@@ -75,10 +75,11 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
                         children: <Widget>[
                           Text(
                             AppLocalizations.of('Full Name'),
-                            style: Theme.of(context).textTheme.caption!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.caption!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                           ),
                         ],
                       ),
@@ -88,25 +89,25 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
                       TextField(
                         controller: displayNamecontoller,
                         keyboardType: TextInputType.text,
-                        decoration: CustomParameters.getInputDecorationRegister(context,
-                            'Full Name', Icon(Icons.keyboard)),
+                        decoration: CustomParameters.getInputDecorationRegister(
+                            context, 'Full Name', Icon(Icons.keyboard)),
                         style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
                       ),
                       SizedBox(
                         height: 16,
                       ),
-
                       Row(
                         children: <Widget>[
                           Text(
                             AppLocalizations.of('NickName'),
-                            style: Theme.of(context).textTheme.caption!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.caption!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                           ),
                         ],
                       ),
@@ -116,25 +117,25 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
                       TextField(
                         controller: nickNamecontoller,
                         keyboardType: TextInputType.text,
-                        decoration: CustomParameters.getInputDecorationRegister(context,
-                            'NickName', Icon(Icons.keyboard)),
+                        decoration: CustomParameters.getInputDecorationRegister(
+                            context, 'NickName', Icon(Icons.keyboard)),
                         style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
                       ),
                       SizedBox(
                         height: 16,
                       ),
-
                       Row(
                         children: <Widget>[
                           Text(
                             AppLocalizations.of('Mobile No'),
-                            style: Theme.of(context).textTheme.caption!.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.caption!.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                           ),
                         ],
                       ),
@@ -144,17 +145,16 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
                       TextField(
                         controller: phonecontoller,
                         keyboardType: TextInputType.text,
-                        decoration: CustomParameters.getInputDecorationRegister(context,
-                            'Mobile No', Icon(Icons.keyboard)),
+                        decoration: CustomParameters.getInputDecorationRegister(
+                            context, 'Mobile No', Icon(Icons.keyboard)),
                         style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
                       ),
                       SizedBox(
                         height: 16,
                       ),
-
                     ],
                   ),
                 ],
@@ -165,16 +165,16 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
             ),
             Container(
               height: 40,
-              child:InkWell(
+              child: InkWell(
                 highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
                 onTap: () async {
-                  var connectivity =
-                  await Connectivity().checkConnectivity();
+                  var connectivity = await Connectivity().checkConnectivity();
                   if (connectivity != ConnectivityResult.mobile &&
                       connectivity != ConnectivityResult.wifi) {}
                   if (displayNamecontoller.text.length < 3) {
-                    showAlert(context,"Full Name must not empty");
+                    showAlert(
+                        context, "Full Name must not empty", AlertType.error);
                     return;
                   }
 
@@ -198,35 +198,37 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
                   }
 
                   if (!containTitle) {
-                    showAlert(context,
-                        "Full Name must start with either one of these (Mr, Mrs, Dr, Hon ,Miss,Sir,Ms)");
+                    showAlert(
+                        context,
+                        "Full Name must start with either one of these (Mr, Mrs, Dr, Hon ,Miss,Sir,Ms)",
+                        AlertType.error);
                     return;
                   }
                   if (phonecontoller.text.length != 10) {
-                    showAlert(context, "Phone number must be 10 characters");
+                    showAlert(context, "Phone number must be 10 characters",
+                        AlertType.error);
                     return;
                   } else {
-                    //Check phone number existence
-                    bool customerFound = false;
                     var driverRef = FirebaseDatabase.instance
                         .reference()
                         .child('customersTemp')
                         .orderByChild("phoneNumber")
                         .equalTo(phonecontoller.text.trim());
-                    driverRef
-                        .once()
-                        .then((DataSnapshot snapshot) {
+                    driverRef.once().then((DataSnapshot snapshot) {
                       print("snapshot=> ${snapshot.value}");
                       if (snapshot.value != null) {
-                        showAlert(context,  "Customer with same phone number exists in our system.");
+                        showAlert(
+                            context,
+                            "Customer with same phone number exists in our system.",
+                            AlertType.error);
                         return;
+                      } else {
+                        registerUser();
                       }
                     });
                   }
-                  registerUser();
                 },
-                child:
-                Container(
+                child: Container(
                   height: 40,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
@@ -234,11 +236,11 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
                   ),
                   child: Center(
                     child: Text(
-                      AppLocalizations.of('COMPLETE'),
+                      AppLocalizations.of('ADD CUSTOMER'),
                       style: Theme.of(context).textTheme.button!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: ConstanceData.secoundryFontColor,
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: ConstanceData.secoundryFontColor,
+                          ),
                     ),
                   ),
                 ),
@@ -252,7 +254,6 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
       ),
     );
   }
-
 
   void registerUser() async {
     var email = emailGenarator();
@@ -270,14 +271,14 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
     //     });
     try {
       String _generatedPassword =
-      CommonService.generatePassword(true, true, true, false, 17);
+          CommonService.generatePassword(true, true, true, false, 17);
       print('temp password" $_generatedPassword');
 
       var serial = await SerialService.getSerial(SetialTypes.tempCustomer);
       print('serial" $serial');
 
       var newuser =
-      FirebaseDatabase.instance.reference().child('customersTemp/').push();
+          FirebaseDatabase.instance.reference().child('customersTemp/').push();
 
       Map usermap = {
         'key': newuser.key,
@@ -298,7 +299,10 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
       nickNamecontoller.text = "";
 
       //Navigator.pop(dialogContext);
-      showAlert(context, "${displayNamecontoller.text} was added to the system.");
+      showAlert(
+          context,
+          "${displayNamecontoller.text} was added to the system.",
+          AlertType.info);
     } on FirebaseAuthException catch (e) {
       //Navigator.pop(context);
       if (e.code == 'weak-password') {
@@ -337,16 +341,15 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
   }
 
   ///Show alerts /*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*//*/*/*/*/*/*/*/
-  showAlert(context, message) {
+  showAlert(context, message, AlertType alertType) {
     Alert(
       context: context,
-      type: AlertType.error,
+      type: alertType,
       title: "Go2Go Messaging",
       desc: message,
       style: AlertStyle(
           descStyle: TextStyle(fontSize: 15),
-          titleStyle: TextStyle(color: Color(0xFFEB1465))
-      ),
+          titleStyle: TextStyle(color: Color(0xFFEB1465))),
       buttons: [
         DialogButton(
           child: Text(
@@ -359,5 +362,4 @@ class _AddNewVehicalState extends State<AddNewCustomer> {
       ],
     ).show();
   }
-
 }
